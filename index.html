@@ -41,6 +41,7 @@
         game.load.spritesheet('tdsprites', 'assets/towerDefense_tilesheet.png', 64, 64);
         game.load.spritesheet('towers', 'assets/Towers.png', 64, 64);
         game.load.spritesheet('runes', 'assets/runes.png', 64, 64);
+        game.load.spritesheet('restart', 'assets/restart.png', 64, 64);
 
         game.load.spritesheet('explo', 'assets/explo.png', 120, 120, 21);
         game.load.spritesheet('exploice', 'assets/exploice.png', 120, 120, 21);
@@ -53,7 +54,7 @@
 
     }
     var timesRun = 0;
-    var paths, tdSprites, home, homes, spawn, spawns, minions, towers, fieldElements, bullets, lifeText, waveText, spawnTimerWave, spawnTimerMinion, selections, rangeCircle, firetowerattack, firetowerattacks, icetowerattacks, graphics, iceTowerActive, iceTowers, upgradecircle, sell, sells, rangeCircles, towerstats;
+    var paths, tdSprites, home, homes, spawn, spawns, minions, towers, fieldElements, bullets, lifeText, waveText, spawnTimerWave, spawnTimerMinion, selections, rangeCircle, firetowerattack, firetowerattacks, icetowerattacks, graphics, iceTowerActive, iceTowers, upgradecircle, sell, sells, rangeCircles, towerstats, uibuttons, restartButton;
     var tower = [];
     var path = [];
     var bullet = [];
@@ -190,6 +191,7 @@
         rangeCircles = game.add.group();
         selections = game.add.group();
         sells = game.add.group();
+        uibuttons = game.add.group();
 
 
         //
@@ -286,6 +288,9 @@
         /** END BUILD MAP **/
 
         /** BUILD POINTS & INFORMATIONS **/
+
+        restartButton = uibuttons.create(1088,32, 'restart');
+        restartButton.scale.setTo(0.5, 0.5);
                 //corners
         var temp = fieldElements.create(800, 16, 'mapsprites', 194);
         temp.data.type = "infoGround";
