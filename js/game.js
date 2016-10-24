@@ -25,6 +25,7 @@ function draw() {
 
     var thtml = '';
 
+
     for (var i = 0; i < field.length; i++) {
         thtml += '<tr>';
         for (var j = 0; j < field[i].length; j++) {
