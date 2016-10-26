@@ -8,6 +8,8 @@
     <style type="text/css">
         body {
             margin: 0;
+            background-image: url("assets/bg.png");
+            background-repeat: repeat;
         }
     </style>
 </head>
@@ -30,7 +32,8 @@
     ];
 
 
-    var game = new Phaser.Game(1280, 800, Phaser.AUTO, '', {preload: preload, create: create, update: update});
+    var game = new Phaser.Game(1280, 800, Phaser.AUTO, '', {preload: preload, create: create, update: update}, true);
+//    var game = new Phaser.Game(1440, 960, Phaser.AUTO, '', {preload: preload, create: create, update: update});
 
     function preload() {
         var style = {font: "24px Arial", fill: "#FFF", align: "center"};
@@ -51,7 +54,7 @@
         game.load.audio('t4', ['sounds/t4.mp3']);
         game.load.audio('sell', ['sounds/sell.ogg']);
         game.load.audio('bullet', ['sounds/bullet.wav']);
-
+        temp.destroy();
     }
     var timesRun = 0;
     var paths, tdSprites, home, homes, spawn, spawns, minions, towers, fieldElements, bullets, lifeText, waveText, spawnTimerWave, spawnTimerMinion, selections, rangeCircle, firetowerattack, firetowerattacks, icetowerattacks, graphics, iceTowerActive, iceTowers, upgradecircle, sell, sells, rangeCircles, towerstats, uibuttons, restartButton;
@@ -202,14 +205,14 @@
 
 
         //Water Background
-        for (var i = 0; i < 1280; i += 64) {
-            for (var j = 0; j < 800; j += 64) {
-                fieldElement[fieldElement.length] = fieldElements.create(i, j, 'mapsprites', 70);
-                fieldElement[fieldElement.length - 1].data.type = "water";
-                fieldElement[fieldElement.length - 1].inputEnabled = true;
-                fieldElement[fieldElement.length - 1].events.onInputDown.add(onClickField, this);
-            }
-        }
+//        for (var i = 0; i < 1280; i += 64) {
+//            for (var j = 0; j < 800; j += 64) {
+//                fieldElement[fieldElement.length] = fieldElements.create(i, j, 'mapsprites', 70);
+//                fieldElement[fieldElement.length - 1].data.type = "water";
+//                fieldElement[fieldElement.length - 1].inputEnabled = true;
+//                fieldElement[fieldElement.length - 1].events.onInputDown.add(onClickField, this);
+//            }
+//        }
 
         //map corners
         fieldElement[fieldElement.length] = fieldElements.create(16, 16, 'mapsprites', 69);
@@ -652,6 +655,7 @@
 
 
     function update() {
+        resizeGame();
         if (!lose) {
 
             game.physics.arcade.overlap(bullets, minions, hitMinion, null, this);
@@ -1685,6 +1689,15 @@
         console.log(diff);
         console.log(fieldDistances);
     }
+
+    var resizeGame = this._fitScreen = function () {
+        game.scale.scaleMode = Phaser.ScaleManager.SHOW_ALL;
+
+        game.scale.pageAlignHorizontally = true;
+        game.scale.pageAlignVertically = true;
+        game.scale.forceLandscape = false;
+
+    };
 </script>
 
 </body>
