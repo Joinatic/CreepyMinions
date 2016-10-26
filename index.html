@@ -30,32 +30,6 @@
         [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
         [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
     ];
-
-
-    var game = new Phaser.Game(1280, 800, Phaser.AUTO, '', {preload: preload, create: create, update: update}, true);
-//    var game = new Phaser.Game(1440, 960, Phaser.AUTO, '', {preload: preload, create: create, update: update});
-
-    function preload() {
-        var style = {font: "24px Arial", fill: "#FFF", align: "center"};
-
-        // Lifes
-         var temp = game.add.text(0, 0, "Loading...", style);
-        game.load.spritesheet('mapsprites', 'assets/mapPack_spritesheet.png', 64, 64);
-        game.load.spritesheet('tdsprites', 'assets/towerDefense_tilesheet.png', 64, 64);
-        game.load.spritesheet('towers', 'assets/Towers.png', 64, 64);
-        game.load.spritesheet('runes', 'assets/runes.png', 64, 64);
-        game.load.spritesheet('restart', 'assets/restart.png', 64, 64);
-
-        game.load.spritesheet('explo', 'assets/explo.png', 120, 120, 21);
-        game.load.spritesheet('exploice', 'assets/exploice.png', 120, 120, 21);
-//        game.load.spritesheet('explo', 'assets/explo.png', 120, 120);
-        game.load.audio('t2', ['sounds/t2.mp3']);
-        game.load.audio('t3', ['sounds/t3.mp3']);
-        game.load.audio('t4', ['sounds/t4.mp3']);
-        game.load.audio('sell', ['sounds/sell.ogg']);
-        game.load.audio('bullet', ['sounds/bullet.wav']);
-        temp.destroy();
-    }
     var timesRun = 0;
     var paths, tdSprites, home, homes, spawn, spawns, minions, towers, fieldElements, bullets, lifeText, waveText, spawnTimerWave, spawnTimerMinion, selections, rangeCircle, firetowerattack, firetowerattacks, icetowerattacks, graphics, iceTowerActive, iceTowers, upgradecircle, sell, sells, rangeCircles, towerstats, uibuttons, restartButton;
     var tower = [];
@@ -158,6 +132,32 @@
         bullet: 0,
         active: true
     };
+
+    var game = new Phaser.Game(1280, 800, Phaser.AUTO, '', {preload: preload, create: create, update: update}, true);
+//    var game = new Phaser.Game(1440, 960, Phaser.AUTO, '', {preload: preload, create: create, update: update});
+
+    function preload() {
+        var style = {font: "24px Arial", fill: "#FFF", align: "center"};
+
+        // Lifes
+         var temp = game.add.text(0, 0, "Loading...", style);
+        game.load.spritesheet('mapsprites', 'assets/mapPack_spritesheet.png', 64, 64);
+        game.load.spritesheet('tdsprites', 'assets/towerDefense_tilesheet.png', 64, 64);
+        game.load.spritesheet('towers', 'assets/Towers.png', 64, 64);
+        game.load.spritesheet('runes', 'assets/runes.png', 64, 64);
+        game.load.spritesheet('restart', 'assets/restart.png', 64, 64);
+
+        game.load.spritesheet('explo', 'assets/explo.png', 120, 120, 21);
+        game.load.spritesheet('exploice', 'assets/exploice.png', 120, 120, 21);
+//        game.load.spritesheet('explo', 'assets/explo.png', 120, 120);
+        game.load.audio('t2', ['sounds/t2.mp3']);
+        game.load.audio('t3', ['sounds/t3.mp3']);
+        game.load.audio('t4', ['sounds/t4.mp3']);
+        game.load.audio('sell', ['sounds/sell.ogg']);
+        game.load.audio('bullet', ['sounds/bullet.wav']);
+        temp.destroy();
+    }
+
     function create() {
         /** sounds **/
         sounds.upgrade.t2 = game.add.audio('t2');
@@ -660,10 +660,21 @@
 
             game.physics.arcade.overlap(bullets, minions, hitMinion, null, this);
             game.physics.arcade.overlap(minions, homes, minionHitBase, null, this);
-            game.physics.arcade.overlap(towers, minions, shootCalc, null, this);
+//            game.physics.arcade.overlap(towers, minions, shootCalc, null, this);
             minions.forEachAlive(function (minion) {
                 if ((minion.data.stuntime ) < game.time.now - 1000) minion.data.stunned = false;
                 moveDatMinion(minion);
+
+            });
+            towers.forEachAlive(function(tower) {
+                if(tower.data.lastShot < game.time.now - tower.data.atkspeed) {
+                    minions.forEachAlive(function (minion) {
+                        if(game.physics.arcade.distanceBetween(tower, minion)<=towerRange[tower.data.towerid]) {
+                            shootCalc(tower, minion);
+                        }
+                    });
+                }
+
             });
 
             updateText();
@@ -1075,8 +1086,6 @@
 //            game.debug.body(e);
             selectedLiveTower = e.data.ID;
 
-        } else if (e.data.type === 'water') {
-            GimmeDatRess(9999999999999);
         } else if (e.data.type === 'sell') {
             if (selectedLiveTower !== -1) {
                 sellTower(selectedLiveTower);
@@ -1088,6 +1097,7 @@
     function youLoose() {
         if (life <= 0) {
             lose = true;
+            game.tween.removeAll()
         }
     }
 
@@ -1144,6 +1154,7 @@
             count++;
             minionid.push(minion.data.id);
         }, this);
+
         if (count > 0) {
             return minionid[0];
         } else {
@@ -1188,7 +1199,7 @@
             }
             minion[takeThisMinion].data.revived = false;
         } else {
-            console.log("Recycled!");
+            game.tweens.remove(minion[takeThisMinion]);
             minion[takeThisMinion].texture = dummy[id].texture;
             minion[takeThisMinion].position.x = x;
             minion[takeThisMinion].position.y = y;
@@ -1205,7 +1216,7 @@
         minion[takeThisMinion].data.type = 'minion';
         minion[takeThisMinion].data.fieldsSlowed = 0;
         minion[takeThisMinion].data.lastfirehit = 0;
-        minion[takeThisMinion].data.minionFixSpeed = 300;
+        minion[takeThisMinion].data.minionFixSpeed = 600;
         minion[takeThisMinion].data.minionSpeed = 300;
         minion[takeThisMinion].data.movediorectioninterval = null;
         minion[takeThisMinion].data.movedirection = {x: 0, y: 0};
@@ -1231,7 +1242,7 @@
                 x: Math.floor(getPosition(minion.position.x)),
                 y: Math.floor(getPosition(minion.position.y))
             };
-            /** NEW MOVEMENT **/
+
             if (!(pos[0] === 11 && pos[1] === 5) && minion.alive) {
                 var way = {
                     u: 999,
@@ -1252,7 +1263,7 @@
                 if ((pos.y + 1) < 12) {
                     way.d = fieldDistances[pos.x][pos.y + 1];
                 }
-                console.log(way);
+
                 if (way.u >= 0 && way.d >= 0 && way.l >= 0 && way.r >= 0) {
                     var min = Math.min(way.u, way.d, way.r, way.l);
                     if (min === way.u) {
@@ -1278,8 +1289,7 @@
                     }
 
                 }
-                console.log(pos);
-                console.log(goto);
+
 
 
                 var tween = game.add.tween(minion);
@@ -1291,34 +1301,7 @@
                 }, this);
 
             }
-            /** NEW MOVEMENT **/
-            /** OLD MOVEMENT SHIT **/
-            if (!(pos[0] >= 11 && pos[1] >= 5) && minion.alive && false) {
-                var currentPath = findPath(field, pos, [11, 5]);
-                var goto = {
-                    x: getCoordinate(currentPath[1][0]),
-                    y: getCoordinate(currentPath[1][1])
-                };
-                minion.data.movediorectioninterval = setInterval(function () {
-                    var pos = [
-                        Math.floor(getPosition(minion.position.x)),
-                        Math.floor(getPosition(minion.position.y))
-                    ];
-                    minion.data.movedirection.x = (getCoordinate(pos[0]) - goto.x) / 5;
-                    minion.data.movedirection.y = (getCoordinate(pos[1]) - goto.y) / 5;
-                }, 100);
 
-                var tween = game.add.tween(minion);
-                tween.to(goto, minion.data.minionSpeed, 'Linear', true, 0);
-
-                tween.onComplete.add(function () {
-                    clearInterval(minion.data.movediorectioninterval);
-                    tween.stop();
-                    minion.data.moving = false;
-                }, this);
-
-            }
-            /** OLD MOVEMENT SHIT **/
         }
 
     }
@@ -1499,6 +1482,11 @@
     function spawnWave() {
 
         var spawnTime = 200;
+        var countMinions=0;
+        minions.forEachAlive(function(minion){
+            countMinions++;
+        });
+
 
         if (spawnTimerMinion < game.time.now) {
 
@@ -1686,8 +1674,6 @@
 
         var endtime = new Date();
         var diff = endtime.getTime() - starttime.getTime();
-        console.log(diff);
-        console.log(fieldDistances);
     }
 
     var resizeGame = this._fitScreen = function () {

@@ -6,7 +6,6 @@
                 - t2: 5HR
                 - t3: 5HR 5DR 5FR 5IR
                 - t4: 10HR 10DR 10FR 10IR
-        - attack first target
 
 - Minions:
     - Enemy types:
@@ -17,4 +16,3 @@
 - Interface:
     - Restartbutton
     - Win- / Lose-Screen
-    - 
