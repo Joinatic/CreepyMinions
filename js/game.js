@@ -22,9 +22,13 @@ var fieldElement = [];
 var lose = false;
 var towerstat = [];
 var money = 100;
-var uibutton= {
+var uibutton = {
     soundOn: null
 };
+var updateDelay = 0;
+var startPause = 0;
+var endPause = 0;
+var paused = false;
 var moneyText = [];
 var towerPrice = [10, 15, 20, 100, 150, 200, 500, 750, 1000, 2500];
 //fire , ice
@@ -279,9 +283,6 @@ function create() {
     uibutton.play.events.onInputDown.add(togglePause, this);
     uibutton.play.kill();
     uibutton.play.scale.setTo(0.8, 0.8);
-
-
-
 
 
     //corners
@@ -646,63 +647,72 @@ function create() {
 
 function update() {
     resizeGame();
-    if (!lose) {
-        checkMinionsAlive();
-        waveCleared();
-        game.physics.arcade.overlap(bullets, minions, hitMinion, null, this);
-        game.physics.arcade.overlap(minions, homes, minionHitBase, null, this);
-//            game.physics.arcade.overlap(towers, minions, shootCalc, null, this);
-        minions.forEachAlive(function (minion) {
-            if ((minion.data.stuntime ) < game.time.now - 1000 && minion.data.stunned) {
-                // minion.data.stunned = false;
-                minion.data.tween.resume();
-                minion.data.stunned=false;
-            }
-            moveDatMinion(minion);
+    if (!paused) {
+        if (!lose) {
+            // checkMinionsAlive();
+            // waveCleared();
+            game.physics.arcade.overlap(bullets, minions, hitMinion, null, this);
+            game.physics.arcade.overlap(minions, homes, minionHitBase, null, this);
 
-        });
-        towers.forEachAlive(function (tower) {
-            if (tower.data.lastShot < game.time.now - tower.data.atkspeed) {
+            if (updateDelay < game.time.now) {
+                minionsAlive = false;
                 minions.forEachAlive(function (minion) {
-                    if (game.physics.arcade.distanceBetween(tower, minion) <= towerRange[tower.data.towerid]) {
-                        shootCalc(tower, minion);
+                    minionsAlive = true;
+
+                    if ((minion.data.stuntime ) < game.time.now - 1000 && minion.data.stunned) {
+                        // minion.data.stunned = false;
+                        minion.data.tween.resume();
+                        minion.data.stunned = false;
                     }
+                    // moveDatMinion(minion);
+
                 });
+
+                towers.forEachAlive(function (tower) {
+                    if (tower.data.lastShot < game.time.now - tower.data.atkspeed) {
+                        minions.forEachAlive(function (minion) {
+                            if (game.physics.arcade.distanceBetween(tower, minion) <= towerRange[tower.data.towerid]) {
+                                shootCalc(tower, minion);
+                            }
+                        });
+                    }
+
+                });
+
+                for (var i = 0; i < 10; i++) {
+                    if (i === selectedTower) {
+                        selection[i].scale.setTo(1.1, 1.1);
+                    } else {
+                        selection[i].scale.setTo(1, 1);
+                    }
+                }
+
+                bullets.forEachAlive(function (bullet) {
+                    moveBulletToTarget(bullet);
+                }, this);
+
+                if (selectedLiveTower >= 0) {
+                    checkTowerAvailability();
+                } else {
+                    sell.alpha = 0.3;
+                }
+                waveCleared();
+                updateDelay = game.time.now + 200;
             }
 
-        });
+            updateText();
 
-        updateText();
+            // add pause time to wave spawn
+            spawnTimerWave += game.time.pauseDuration;
+            game.time.pauseDuration = 0;
 
-        // add pause time to wave spawn
-        spawnTimerWave += game.time.pauseDuration;
-        game.time.pauseDuration=0;
-
-        if (game.time.now > spawnTimerWave && !spawnLock) {
-            spawnWave();
-        }
-
-
-        if (selectedLiveTower >= 0) {
-            checkTowerAvailability();
-        } else {
-            sell.alpha = 0.3;
-        }
-
-        for (var i = 0; i < 10; i++) {
-            if (i === selectedTower) {
-                selection[i].scale.setTo(1.1, 1.1);
-            } else {
-                selection[i].scale.setTo(1, 1);
+            if (game.time.now > spawnTimerWave && !spawnLock) {
+                spawnWave();
             }
+
+
+            youLoose();
         }
-
-        bullets.forEachAlive(function (bullet) {
-            moveBulletToTarget(bullet);
-        }, this);
-
-
-        youLoose();
     }
 }
 
@@ -832,7 +842,7 @@ function killMinion(minion, dmg) {
         runes.ice.value += minionBounty[minion.data.minionid].ice;
         minion.position.x = -300;
         minion.position.y = -300;
-        minion.data.tween.stop();
+        stopTweensFor(minion);
         minion.damage(dmg);
         minion.kill();
     }
@@ -855,6 +865,7 @@ function shootCalc(tower, minion) {
             if (minion.data.fieldsSlowed !== 5) {
                 minion.data.slowed = true;
                 minion.data.minionSpeed = minion.data.minionFixSpeed * 3;
+                console.log("SLOWED");
                 minion.data.fieldsSlowed = 2;
                 shootBullet(tower, minion);
 
@@ -1082,7 +1093,7 @@ function onClickField(e) {
 
         }
     } else if (e.data.type === 'spawn' && !minionsAlive) {
-        spawnTimerWave = game.time.now+200;
+        spawnTimerWave = game.time.now + 200;
         selectedTower = -1;
     } else if (e.data.type === 'tower') {
         toggleRange(e);
@@ -1170,7 +1181,7 @@ function recycleMinion() {
 
 function checkMinionsAlive() {
     minionsAlive = false;
-    minions.forEachAlive(function (minion) {
+    minions.forEachAlive(function() {
         minionsAlive = true;
     });
 }
@@ -1211,8 +1222,10 @@ function spawnMinion(id) {
                 break;
         }
         minion[takeThisMinion].data.revived = false;
+        minion[takeThisMinion].events.onInputDown.add(onClickField, this);
+        game.physics.arcade.enable(minion[takeThisMinion]);
     } else {
-        minion[takeThisMinion].data.tween.stop();
+        stopTweensFor(minion[takeThisMinion]);
         minion[takeThisMinion].texture = dummy[id].texture;
         minion[takeThisMinion].position.x = x;
         minion[takeThisMinion].position.y = y;
@@ -1229,8 +1242,8 @@ function spawnMinion(id) {
     minion[takeThisMinion].data.type = 'minion';
     minion[takeThisMinion].data.fieldsSlowed = 0;
     minion[takeThisMinion].data.lastfirehit = 0;
-    minion[takeThisMinion].data.minionFixSpeed = 600;
-    minion[takeThisMinion].data.minionSpeed = 600;
+    minion[takeThisMinion].data.minionFixSpeed = 400;
+    minion[takeThisMinion].data.minionSpeed = 400;
     minion[takeThisMinion].data.movediorectioninterval = null;
     minion[takeThisMinion].data.movedirection = {x: 0, y: 0};
     minion[takeThisMinion].data.moving = false;
@@ -1239,8 +1252,20 @@ function spawnMinion(id) {
     minion[takeThisMinion].data.tween = false;
     minion[takeThisMinion].data.stuntime = 0;
     minion[takeThisMinion].inputEnabled = true;
-    minion[takeThisMinion].events.onInputDown.add(onClickField, this);
-    game.physics.arcade.enable(minion[takeThisMinion]);
+
+    moveDatMinion(minion[takeThisMinion]);
+}
+
+function stopTweensFor(obj) {  // first get all of the active tweens
+    var tweens = game.tweens.getAll();  // filter that down to an array of all tweens of the specified objec
+    var currentTweens = tweens.filter(function (tween) {
+        return tween._object === obj;
+    });  // if we have any matching tweens for the object, cycle through all of them and stop them
+    if (currentTweens.length > 0) {
+        for (var t = 0, len = currentTweens.length; t < len; t++) {
+            currentTweens[t].stop();
+        }
+    }
 }
 
 function moveDatMinion(minion) {
@@ -1305,10 +1330,9 @@ function moveDatMinion(minion) {
 
             }
 
+            stopTweensFor(minion);
 
             minion.data.tween = game.add.tween(minion);
-
-            // hier
 
             minion.data.tween.to(goto, minion.data.minionSpeed, 'Linear', true, 0);
 
@@ -1316,8 +1340,11 @@ function moveDatMinion(minion) {
             minion.data.tween.onComplete.add(function () {
                 minion.data.tween.stop();
                 minion.data.moving = false;
+                moveDatMinion(minion);
             }, this);
 
+        } else {
+            stopTweensFor(minion);
         }
 
     }
@@ -1399,7 +1426,7 @@ function minionHitBase(minion, base) {
 
     if (minion.alive && game.physics.arcade.distanceBetween(minion, base) <= 3) {
         life--;
-
+        stopTweensFor(minion);
         minion.kill();
         minion.position.x = -64;
         minion.position.y = -64;
@@ -1409,7 +1436,7 @@ function minionHitBase(minion, base) {
 
 function updateText() {
     var temp = money;
-    if(game.paused) console.log('pause');
+    if (game.paused) console.log('pause');
 
     if (selectedTower >= 0) {
         temp += " (-" + selection[selectedTower].data.towerPrice + ")";
@@ -1498,9 +1525,9 @@ function updateText() {
     runes.holy.text.setText(temp.holy);
     runes.ice.text.setText(temp.ice);
     runes.fire.text.setText(temp.fire);
-    temp= wave;
-    if(!minionsAlive) {
-        temp+=' (' + Math.round(((spawnTimerWave-game.time.now)/1000)+0.5) + ')';
+    temp = wave;
+    if (!minionsAlive) {
+        temp += ' (' + Math.round(((spawnTimerWave - game.time.now) / 1000) + 0.5) + ')';
     }
 
     waveText.setText(temp);
@@ -1510,47 +1537,43 @@ function updateText() {
 function spawnWave() {
 
     var spawnTime = 500;
-    var countMinions = 0;
-    minions.forEachAlive(function (minion) {
-        countMinions++;
-    });
 
 
     if (spawnTimerMinion < game.time.now) {
 
 
         timesRun++;
-        if (timesRun > wave) {
+        if (timesRun > wave+1) {
             timesRun = 0;
 
 
             spawnLock = true;
         } else {
             var rnd = Math.floor(Math.random() * 100);
-            var minID =0;
-            if(rnd<90){
-                minID =0;
-            } else if(rnd>=90 && rnd<=93.5) {
-                minID =1;
+            var minID = 0;
+            if (rnd < 90) {
+                minID = 0;
+            } else if (rnd >= 90 && rnd <= 93.5) {
+                minID = 1;
             }
-             else if(rnd>=93.5 && rnd<=95) {
-                minID =2;
-            } else if(rnd>=95 && rnd<=96.5) {
-                if(wave>=20) {
-                    minID =3;
+            else if (rnd >= 93.5 && rnd <= 95) {
+                minID = 2;
+            } else if (rnd >= 95 && rnd <= 96.5) {
+                if (wave >= 20) {
+                    minID = 3;
                 } else {
-                    minID =0;
+                    minID = 0;
                 }
 
-            } else if(rnd>=96.5 && rnd<=98) {
-                if(wave>=20) {
-                    minID =4;
+            } else if (rnd >= 96.5 && rnd <= 98) {
+                if (wave >= 20) {
+                    minID = 4;
                 } else {
-                    minID =0;
+                    minID = 0;
                 }
 
             } else {
-                minID =0;
+                minID = 0;
             }
 
             spawnMinion(minID);
@@ -1738,23 +1761,42 @@ var resizeGame = this._fitScreen = function () {
 
 /** MENU FUNCTIONS **/
 function togglePause() {
+    console.log(game.time);
+    if (paused) {
+        endPause = game.time.now;
+        minions.forEachAlive(function (target) {
+            target.data.tween.resume();
+        });
+        bullets.forEachAlive(function (bullet) {
+            bullet.body.velocity = bullet.data.velocity;
+        });
+        game.time.now -= (endPause - startPause);
 
-
-    if(game.paused) {
-        game.paused = false;
+        paused = false;
         uibutton.play.kill();
         uibutton.pause.revive();
+        console.log('unpause');
     } else {
+        paused = true;
+        startPause = game.time.now;
+        minions.forEachAlive(function (target) {
+            target.data.tween.pause();
+        });
+        bullets.forEachAlive(function (bullet) {
+            bullet.data.velocity = bullet.body.velocity;
+            console.log(bullet.body.velocity);
+            bullet.body.velocity.setTo(0, 0);
+        });
+        console.log('pause');
         uibutton.pause.kill();
         uibutton.play.revive();
-        game.paused = true;
+        paused = true;
     }
-    // game.physics.arcade.isPaused = (game.physics.arcade.isPaused) ? false : true;
 }
 
 function toggleSound() {
 
-    if(sounds.active) {
+    if (sounds.active) {
         sounds.active = false;
         uibutton.soundOff.kill();
         uibutton.soundOn.revive();

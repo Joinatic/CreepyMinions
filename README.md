@@ -4,6 +4,7 @@ Towerdefensegame with "CreepyMinions"!
 Place your Towers and block the way of the CreepyMinions! Let them walk to your Castle how YOU like it! But be Careful, every Minion takes one Villiger to his Mothership! Don't let them escape!
 
 
+All assets by http://kenney.nl/
 
 
 # to-do's
@@ -19,15 +20,16 @@ Place your Towers and block the way of the CreepyMinions! Let them walk to your 
 
 - Minions:
     - Enemy types:
-        - bosses?
-    - all minions have to be dead if new waves spawns
+        - boss
+        - fast
+        - slow immune
 
-- sounds on/off
 
 - Interface:
+    - pause
     - Restartbutton
     - Win- / Lose-Screen
     
     
 # bugs
-- first wave got normal speed, all neyt waves are slowed
+- first wave got normal speed, all next waves are slowed
