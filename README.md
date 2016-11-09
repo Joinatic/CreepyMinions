@@ -23,12 +23,11 @@ All assets by http://kenney.nl/
         - boss
         - fast
         - slow immune
+        - fire immune
 
 
 - Interface:
-    - pause
-    - Restartbutton
-    - Win- / Lose-Screen
+    - speed up
     
     
 # bugs
