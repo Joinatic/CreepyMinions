@@ -12,6 +12,19 @@ All assets by http://kenney.nl/
 - Tower:
     - bullet to arrow
     - change sound! (+less noisy)
+    
+    - slow tower
+        - 2 upgrade paths:
+            - better slow
+            - stun - but no slow
+    - normal Tower
+        - 2 paths
+            - Attackspeed
+            - Damage
+    - fire Tower
+        - 2 paths
+            - attackspeed
+            - damage
 
     - support Tower (green?)
         - unhide invisible enemys
@@ -23,8 +36,14 @@ All assets by http://kenney.nl/
                 - t4: 10HR 10DR 10FR 10IR
     - "sniper"
         - massive range
+        - 2 paths
+            - damage
+            - atkspeed
     - poison
         - dot
+        - 2 paths
+            - more dmg
+            - more time
     
 
 - Minions:
