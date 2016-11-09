@@ -10,7 +10,10 @@ All assets by http://kenney.nl/
 # to-do's
 
 - Tower:
+    - bullet to arrow
+
     - support Tower (green?)
+        - unhide invisible enemys
         - increases atkspeed(t1), dmg(t2), money(t3)?, 3x runes(t4)?
             - costs:
                 - t1: 1HR
@@ -29,6 +32,7 @@ All assets by http://kenney.nl/
         - fast
         - slow immune
         - fire immune
+        - invisible
 
 
 - Interface:
