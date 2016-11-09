@@ -11,6 +11,7 @@ All assets by http://kenney.nl/
 
 - Tower:
     - bullet to arrow
+    - change sound! (+less noisy)
 
     - support Tower (green?)
         - unhide invisible enemys
