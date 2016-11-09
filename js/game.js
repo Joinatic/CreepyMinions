@@ -1049,11 +1049,11 @@ function setTower(x, y, id) {
         testingPlacable[x][y] = 1;
         var currentPath = findPath(testingPlacable, [0, 5], [11, 5]);
         var testMinionBlock = false;
-        minions.forEachAlive(function(minion) {
+        minions.forEachAlive(function (minion) {
             var currentPath = findPath(testingPlacable, [getPosition(minion.position.x), getPosition(minion.position.y)], [11, 5]);
-            console.log(getCoordinate(minion.position.x));
+
             if (!currentPath[0]) {
-                testMinionBlock=true;
+                testMinionBlock = true;
             }
         });
         // console.log(currentPath);
@@ -1248,8 +1248,8 @@ function showPathMinion(minion) {
 function youLoose() {
     if (life <= 0) {
         lose = true;
-        minions.forEachAlive(function(minion) {
-           if(minion.data.tween) minion.data.tween.stop();
+        minions.forEachAlive(function (minion) {
+            if (minion.data.tween) minion.data.tween.stop();
         });
     }
 }
@@ -1384,8 +1384,7 @@ function spawnMinion(id) {
         minion[takeThisMinion].events.onInputDown.add(onClickField, this);
         game.physics.arcade.enable(minion[takeThisMinion]);
     } else {
-        minion[takeThisMinion].data.worth = minionBounty[id];
-        minion[takeThisMinion].data.fixWorth = minionBounty[id];
+
         stopTweensFor(minion[takeThisMinion]);
         minion[takeThisMinion].texture = dummy[id].texture;
         minion[takeThisMinion].position.x = x;
@@ -1394,7 +1393,9 @@ function spawnMinion(id) {
         minion[takeThisMinion].data.minionid = id;
         minion[takeThisMinion].data.revived = true;
     }
-
+    minion[takeThisMinion].data.worth = minionBounty[id];
+    console.log(minionBounty[id]);
+    minion[takeThisMinion].data.fixWorth = minionBounty[id];
     minion[takeThisMinion].data.fieldsSlowed = 0;
     minion[takeThisMinion].data.id = takeThisMinion;
     minion[takeThisMinion].health = wave * 3;
@@ -1710,6 +1711,7 @@ function spawnWave() {
 
 function waveCleared() {
     if (!minionsAlive && spawnLock) {
+        money += (wave * 10);
         wave++;
         game.time.slowMotion = 2;
         spawnLock = false;
