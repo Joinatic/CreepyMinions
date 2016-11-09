@@ -1731,7 +1731,6 @@ function drawPath(actualPath) {
     }
     path = [];
     var prev = '';
-    var actual = '';
     var next = '';
     for (var i = 0; i < actualPath.length; i++) {
         var spriteid;
