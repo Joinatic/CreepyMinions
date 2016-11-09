@@ -206,7 +206,7 @@ function preload() {
 }
 var debugtext = [];
 function create() {
-
+    this.stage.disableVisibilityChange = true;
 
     /** sounds **/
     sounds.upgrade.t2 = game.add.audio('t2');
@@ -1247,7 +1247,9 @@ function showPathMinion(minion) {
 function youLoose() {
     if (life <= 0) {
         lose = true;
-        game.tween.removeAll()
+        minions.forEachAlive(function(minion) {
+           if(minion.data.tween) minion.data.tween.stop();
+        });
     }
 }
 
@@ -1679,7 +1681,7 @@ function updateText() {
     //         debugtext[i][j].setText(minionOnField[i][j]);
     //     }
     // }
-    // waveText.setText(temp);
+    waveText.setText(temp);
 }
 
 
