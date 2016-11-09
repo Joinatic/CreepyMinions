@@ -17,6 +17,11 @@ All assets by http://kenney.nl/
                 - t2: 5HR
                 - t3: 5HR 5DR 5FR 5IR
                 - t4: 10HR 10DR 10FR 10IR
+    - "sniper"
+        - massive range
+    - poison
+        - dot
+    
 
 - Minions:
     - Enemy types:
@@ -28,6 +33,12 @@ All assets by http://kenney.nl/
 
 - Interface:
     - speed up
+    - menu at start
+    - lose screen
+    - background music
+
+- Buffs
+    - f.e. all towers +1 dmg
     
     
 # bugs

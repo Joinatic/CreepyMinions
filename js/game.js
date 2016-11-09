@@ -276,12 +276,12 @@ function create() {
 
     /** BUILD POINTS & INFORMATIONS **/
 
-    uibutton.soundOn = uibuttons.create(1088, 24, 'menu', 5);
+    uibutton.soundOn = uibuttons.create(1088, 24, 'menu', 25);
     uibutton.soundOn.inputEnabled = true;
     uibutton.soundOn.events.onInputDown.add(toggleSound, this);
     uibutton.soundOn.kill();
 
-    uibutton.soundOff = uibuttons.create(1088, 24, 'menu', 25);
+    uibutton.soundOff = uibuttons.create(1088, 24, 'menu', 5);
     uibutton.soundOff.inputEnabled = true;
     uibutton.soundOff.events.onInputDown.add(toggleSound, this);
 
@@ -872,11 +872,11 @@ function killMinion(minion, dmg) {
     if (minion.alive) {
         minionOnField[minion.data.lastPos.x][minion.data.lastPos.y] = 0;
         minionOnField[getPosition(minion.position.x)][getPosition(minion.position.y)] = 0;
-        money += minionBounty[minion.data.minionid].money;
-        runes.holy.value += minionBounty[minion.data.minionid].holy;
-        runes.dark.value += minionBounty[minion.data.minionid].dark;
-        runes.fire.value += minionBounty[minion.data.minionid].fire;
-        runes.ice.value += minionBounty[minion.data.minionid].ice;
+        money += minion.data.worth.money;
+        runes.holy.value += minion.data.worth.holy;
+        runes.dark.value += minion.data.worth.dark;
+        runes.fire.value += minion.data.worth.fire;
+        runes.ice.value += minion.data.worth.ice;
         minion.position.x = -300;
         minion.position.y = -300;
         stopTweensFor(minion);
@@ -1359,6 +1359,8 @@ function spawnMinion(id) {
         minion[takeThisMinion].events.onInputDown.add(onClickField, this);
         game.physics.arcade.enable(minion[takeThisMinion]);
     } else {
+        minion[takeThisMinion].data.worth = minionBounty[id];
+        minion[takeThisMinion].data.fixWorth = minionBounty[id];
         stopTweensFor(minion[takeThisMinion]);
         minion[takeThisMinion].texture = dummy[id].texture;
         minion[takeThisMinion].position.x = x;
@@ -1509,10 +1511,6 @@ function shootBullet(tower, target) {
             bullet[takeDatBullet].revive();
         }
         game.physics.arcade.enable(bullet[takeDatBullet]);
-        var goto = {
-            x: (target.position.x + 16) + target.data.movedirection.x,
-            y: (target.position.y + 16) + target.data.movedirection.y
-        };
         bullet[takeDatBullet].data.target = target.data.id;
         bullet[takeDatBullet].data.targetHit = 0;
         bullet[takeDatBullet].data.damage = tower.data.damage;
