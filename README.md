@@ -28,6 +28,7 @@ All assets by http://kenney.nl/
     
 
 - Minions:
+    - walk animation
     - Enemy types:
         - boss
         - fast

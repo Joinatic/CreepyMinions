@@ -12,20 +12,8 @@ var fieldDistances = [
     [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
     [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
 ];
-var minionOnField = [
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
-];
+var minionOnField = fieldDistances;
+var field = fieldDistances;
 var timesRun = 0;
 var paths, tdSprites, home, homes, spawn, spawns, minions, towers, fieldElements, bullets, lifeText, waveText, spawnTimerWave, spawnTimerMinion, selections, rangeCircle, firetowerattack, firetowerattacks, icetowerattacks, graphics, iceTowerActive, iceTowers, upgradecircle, sell, sells, rangeCircles, towerstats, uibuttons, restartButton;
 var tower = [];
@@ -108,20 +96,7 @@ var runes = {
     }
 };
 var minionsAlive = false;
-var field = [
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
-];
+
 var spawnLock = false;
 var fieldObjects = [];
 
@@ -195,6 +170,7 @@ function preload() {
     game.load.spritesheet('runes', 'assets/runes.png', 64, 64);
     game.load.spritesheet('menu', 'assets/menusheet.png', 50, 50);
     game.load.spritesheet('restart', 'assets/restart.png', 64, 64);
+    game.load.spritesheet('minions', 'assets/spritesheet_minions.png', 128, 256);
     game.load.spritesheet('explo', 'assets/explo.png', 120, 120, 21);
     game.load.spritesheet('exploice', 'assets/exploice.png', 120, 120, 21);
     game.load.audio('t2', ['sounds/t2.mp3']);
@@ -1333,26 +1309,50 @@ function spawnMinion(id) {
             case 0:
                 minion[takeThisMinion] = minions.create(x, y, 'mapsprites', 4);
                 minion[takeThisMinion].data.minionid = 0;
+                //
+                // minion[takeThisMinion] = minions.create(x, y, 'minions', 37);
+                // minion[takeThisMinion].data.minionid = 0;
+                // minion[takeThisMinion].animations.add('walk', [37, 45], 4, true);
+                // minion[takeThisMinion].scale.setTo(0.33);
                 break;
             case 1:
                 minion[takeThisMinion] = minions.create(x, y, 'mapsprites', 113);
+                // minion[takeThisMinion] = minions.create(x, y, 'minions', 0);
+                // minion[takeThisMinion].animations.add('walk', [0, 8], 4, true);
+                // minion[takeThisMinion].scale.setTo(0.33);
                 minion[takeThisMinion].data.minionid = 1;
                 //rock
                 break;
             case 2:
                 minion[takeThisMinion] = minions.create(x, y, 'mapsprites', 142);
+                // minion[takeThisMinion] = minions.create(x, y, 'minions', 33);
+                // minion[takeThisMinion].animations.add('walk', [33, 41], 4, true);
+                // minion[takeThisMinion].scale.setTo(0.33);
                 minion[takeThisMinion].data.minionid = 2;
                 //sleepy yellow
                 break;
             case 3:
                 minion[takeThisMinion] = minions.create(x, y, 'mapsprites', 156);
+                // minion[takeThisMinion] = minions.create(x, y, 'minions', 56);
+                // minion[takeThisMinion].animations.add('walk', [58, 66], 4, true);
+                // minion[takeThisMinion].scale.setTo(0.33);
                 minion[takeThisMinion].data.minionid = 3;
                 //one eye red
                 break;
             case 4:
                 minion[takeThisMinion] = minions.create(x, y, 'mapsprites', 185);
+                // minion[takeThisMinion] = minions.create(x, y, 'minions', 40);
+                // minion[takeThisMinion].animations.add('walk', [40, 48], 4, true);
+                // minion[takeThisMinion].scale.setTo(0.33);
                 minion[takeThisMinion].data.minionid = 4;
                 //blue
+                break;
+            case 5:
+                // minion[takeThisMinion] = minions.create(x, y, 'minions', 13);
+                // minion[takeThisMinion].data.minionid = 5;
+                // minion[takeThisMinion].animations.add('walk', [12, 20], 4, true);
+                // minion[takeThisMinion].scale.setTo(0.33);
+                //green
                 break;
         }
         minion[takeThisMinion].data.revived = false;
@@ -1460,6 +1460,7 @@ function moveDatMinion(minion) {
                 minion.data.tween.chain(nextTween);
                 minion.data.tween = nextTween;
             }
+            minion.animations.play('walk');
             minion.data.tween.onComplete.add(function () {
                 // minion.data.tween.stop();
                 minion.data.moving = false;
@@ -1799,7 +1800,7 @@ function drawPath(actualPath) {
 }
 
 function testSprite(id) {
-    game.add.sprite(0, 0, 'mapsprites', id);
+    game.add.sprite(0, 0, 'minions', id);
 }
 
 function GimmeDatRess(value) {
