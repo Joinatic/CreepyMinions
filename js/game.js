@@ -1340,7 +1340,6 @@ function spawnMinion(id) {
                 //rock
                 break;
             case 2:
-
                 minion[takeThisMinion] = minions.create(x, y, 'mapsprites', 142);
                 minion[takeThisMinion].data.minionid = 2;
                 //sleepy yellow
@@ -1367,12 +1366,10 @@ function spawnMinion(id) {
         minion[takeThisMinion].revive();
         minion[takeThisMinion].data.minionid = id;
         minion[takeThisMinion].data.revived = true;
-
     }
 
     minion[takeThisMinion].data.fieldsSlowed = 0;
     minion[takeThisMinion].data.id = takeThisMinion;
-
     minion[takeThisMinion].health = wave * 3;
     minion[takeThisMinion].data.type = 'minion';
     minion[takeThisMinion].data.fieldsSlowed = 0;
@@ -1387,15 +1384,14 @@ function spawnMinion(id) {
     minion[takeThisMinion].data.tween = false;
     minion[takeThisMinion].data.stuntime = 0;
     minion[takeThisMinion].inputEnabled = true;
-
     moveDatMinion(minion[takeThisMinion]);
 }
 
 function stopTweensFor(obj) {  // first get all of the active tweens
     console.log(obj);
-
-    if (obj.data.tween) obj.data.tween.stop();
-
+    if (obj.data.tween) {
+        obj.data.tween.stop();
+    }
 }
 
 function moveDatMinion(minion) {
@@ -1411,8 +1407,6 @@ function moveDatMinion(minion) {
             x: Math.floor(getPosition(minion.position.x)),
             y: Math.floor(getPosition(minion.position.y))
         };
-        // console.log(pos);
-
         if (!(pos.x === 11 && pos.y === 5) && minion.alive) {
             var way = {
                 u: 999,
@@ -1433,7 +1427,6 @@ function moveDatMinion(minion) {
             if ((pos.y + 1) < 12) {
                 way.d = fieldDistances[pos.x][pos.y + 1];
             }
-
             if (way.u >= 0 && way.d >= 0 && way.l >= 0 && way.r >= 0) {
                 var min = Math.min(way.u, way.d, way.r, way.l);
                 if (min === way.u) {
@@ -1458,41 +1451,27 @@ function moveDatMinion(minion) {
                     };
                 }
             }
-
-            // stopTweensFor(minion);
-
-            console.log(minion.data.minionSpeed);
             if (!minion.data.tween) {
                 minion.data.tween = game.add.tween(minion).to(goto, minion.data.minionSpeed, 'Linear', true, 0);
             } else {
                 var nextTween = game.add.tween(minion).to(goto, minion.data.minionSpeed, 'Linear', true, 0);
                 minion.data.tween.chain(nextTween);
                 minion.data.tween = nextTween;
-                // minion.data.tween.chain(goto, minion.data.minionSpeed, 'Linear', true, 0);
             }
-            // console.log(minion.data.tween);
-            //chain?
-
-
             minion.data.tween.onComplete.add(function () {
                 // minion.data.tween.stop();
                 minion.data.moving = false;
                 moveDatMinion(minion);
             }, this);
-
-
             minionOnField[getPosition(goto.x)][getPosition(goto.y)] = 1;
             if (minion.data.lastPos) {
                 minionOnField[minion.data.lastPos.x][minion.data.lastPos.y] = 0;
             }
-
             minion.data.lastPos = pos;
         } else {
             stopTweensFor(minion);
         }
-
     }
-
 }
 
 function moveBulletToTarget(bullet) {
@@ -1518,10 +1497,8 @@ function recycleBullet() {
 }
 
 function shootBullet(tower, target) {
-
     if (tower.data.towerid === 0 || tower.data.towerid === 3 || tower.data.towerid === 6) {
         var takeDatBullet = recycleBullet();
-
         if (takeDatBullet === null) {
             takeDatBullet = bullet.length;
             bullet[takeDatBullet] = bullets.create(tower.position.x, tower.position.y, 'tdsprites', 275);
@@ -1531,14 +1508,11 @@ function shootBullet(tower, target) {
             bullet[takeDatBullet].position.y = tower.position.y;
             bullet[takeDatBullet].revive();
         }
-
         game.physics.arcade.enable(bullet[takeDatBullet]);
-
         var goto = {
             x: (target.position.x + 16) + target.data.movedirection.x,
             y: (target.position.y + 16) + target.data.movedirection.y
         };
-
         bullet[takeDatBullet].data.target = target.data.id;
         bullet[takeDatBullet].data.targetHit = 0;
         bullet[takeDatBullet].data.damage = tower.data.damage;
@@ -1559,15 +1533,11 @@ function shootBullet(tower, target) {
         tower.data.explosionFire.animations.currentAnim.onComplete.add(function (explo) {
             explo.kill();
         }, this);
-
-
     }
 }
 
 
 function minionHitBase(minion, base) {
-    console.log();
-
     if (minion.alive && game.physics.arcade.distanceBetween(minion, base) <= 3) {
         minionOnField[minion.data.lastPos.x][minion.data.lastPos.y] = 0;
         minionOnField[getPosition(minion.position.x)][getPosition(minion.position.y)] = 0;
@@ -1577,13 +1547,10 @@ function minionHitBase(minion, base) {
         minion.position.x = -64;
         minion.position.y = -64;
     }
-
 }
 
 function updateText() {
     var temp = money;
-    if (game.paused) console.log('pause');
-
     if (selectedTower >= 0) {
         temp += " (-" + selection[selectedTower].data.towerPrice + ")";
         if (selectedTower === 9) {
@@ -1593,7 +1560,6 @@ function updateText() {
             towerstat[0].text = selection[selectedTower].data.dps;
             towerstat[1].text = selection[selectedTower].data.effects;
         }
-
     } else if (selectedLiveTower >= 0) {
         if (tower[selectedLiveTower].data.towerid < 6) {
             temp += " (-" + selection[tower[selectedLiveTower].data.towerid + 3].data.towerPrice + ")";
@@ -1607,14 +1573,11 @@ function updateText() {
             towerstat[0].text = selection[tower[selectedLiveTower].data.towerid].data.dps;
             towerstat[1].text = selection[tower[selectedLiveTower].data.towerid].data.effects;
         }
-
-
     } else {
         towerstat[0].text = '-';
         towerstat[1].text = '-';
     }
     moneyText.setText(temp);
-    //selection[id].data.runeCosts
     temp = {dark: runes.dark.value, holy: runes.holy.value, ice: runes.ice.value, fire: runes.fire.value};
     if (selectedTower >= 0) {
         if (selection[selectedTower].data.runeCosts.dark > 0) {
@@ -1629,7 +1592,6 @@ function updateText() {
         if (selection[selectedTower].data.runeCosts.fire > 0) {
             temp.fire += " (-" + selection[selectedTower].data.runeCosts.fire + ")"
         }
-
     }
     if (selectedLiveTower >= 0) {
         temp = {dark: runes.dark.value, holy: runes.holy.value, ice: runes.ice.value, fire: runes.fire.value};
@@ -1661,11 +1623,7 @@ function updateText() {
                 temp.fire += " (-" + selection[9].data.runeCosts.fire + ")"
             }
         }
-
-
     }
-
-
     lifeText.setText(life);
     runes.dark.text.setText(temp.dark);
     runes.holy.text.setText(temp.holy);
@@ -1688,16 +1646,10 @@ function updateText() {
 function spawnWave() {
 
     var spawnTime = 500;
-
-
     if (spawnTimerMinion < game.time.now) {
-
-
         timesRun++;
         if (timesRun > wave + 1) {
             timesRun = 0;
-
-
             spawnLock = true;
         } else {
             var rnd = Math.floor(Math.random() * 100);
@@ -1722,19 +1674,14 @@ function spawnWave() {
                 } else {
                     minID = 0;
                 }
-
             } else {
                 minID = 0;
             }
 
             spawnMinion(minID);
             spawnTimerMinion = game.time.now + spawnTime;
-
         }
-
     }
-
-
 }
 
 function waveCleared() {
@@ -1743,9 +1690,7 @@ function waveCleared() {
         game.time.slowMotion = 2;
         spawnLock = false;
         spawnTimerWave = game.time.now + spawnDelay;
-        console.log(spawnTimerWave);
     }
-
 }
 
 function toggleRange(e) {
@@ -1757,9 +1702,6 @@ function toggleRange(e) {
         upgradecircle = game.add.graphics(0, 0);
         rangeCircles.add(rangeCircle);
         rangeCircles.add(upgradecircle);
-
-        // graphics.lineStyle(2, 0xffd900, 1);
-
         rangeCircle.beginFill(0x000, 0.2);
         upgradecircle.beginFill(0x000, 0.6);
         rangeCircle.drawCircle(e.position.x + 32, e.position.y + 32, e.data.range * 2);
@@ -1789,13 +1731,9 @@ function drawPath(actualPath) {
         path[i].destroy();
     }
     path = [];
-
-
     var prev = '';
     var actual = '';
     var next = '';
-    // var actualPath = findPath(field, [0, 5], [11, 5]);
-
     for (var i = 0; i < actualPath.length; i++) {
         var spriteid;
         if (i !== actualPath.length - 1) {
@@ -1809,7 +1747,6 @@ function drawPath(actualPath) {
                 next = 'unten';
             }
         }
-
         if (i !== 0) {
             if ((actualPath[i][0] - actualPath[i - 1][0]) > 0) {
                 prev = 'links';
@@ -1821,7 +1758,6 @@ function drawPath(actualPath) {
                 prev = 'unten';
             }
         }
-
         if (i === 0) {
             if (next === 'oben') {
                 spriteid = 168;
@@ -1878,28 +1814,20 @@ function GimmeDatRess(value) {
 
 function setFieldDistances() {
     var starttime = new Date();
-
     for (var i = 0; i < 12; i++) {
         for (var j = 0; j < 12; j++) {
-//                console.log("x: " + i + ", y: " + j + ", " +field[i][j]);
             if (field[i][j] === 1) {
                 fieldDistances[i][j] = 999;
             } else {
                 fieldDistances[i][j] = setDistanceOf([i, j]);
             }
-
         }
     }
-
     function setDistanceOf(point) {
         var currentPath = findPath(field, point, [11, 5]);
         return currentPath.length;
     }
-
-    var endtime = new Date();
-    var diff = endtime.getTime() - starttime.getTime();
 }
-
 var resizeGame = this._fitScreen = function () {
     game.scale.scaleMode = Phaser.ScaleManager.SHOW_ALL;
 
@@ -1909,10 +1837,8 @@ var resizeGame = this._fitScreen = function () {
 
 };
 
-
 /** MENU FUNCTIONS **/
 function togglePause() {
-    console.log(game.time);
     if (paused) {
         endPause = game.time.now;
         minions.forEachAlive(function (target) {
@@ -1929,8 +1855,6 @@ function togglePause() {
         paused = false;
         uibutton.play.kill();
         uibutton.pause.revive();
-        console.log('unpause');
-
     } else {
         paused = true;
         startPause = game.time.now;
@@ -1942,10 +1866,8 @@ function togglePause() {
             console.log(bullet.body.velocity);
             bullet.body.velocity.setTo(0, 0);
         });
-        console.log('pause');
         uibutton.pause.kill();
         uibutton.play.revive();
-
     }
 }
 
