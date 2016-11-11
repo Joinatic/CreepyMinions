@@ -41,7 +41,7 @@ var field = [
     [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
 ];
 var timesRun = 0;
-var paths, tdSprites, home, homes, spawn, spawns, minions, towers, fieldElements, bullets, lifeText, waveText, spawnTimerWave, spawnTimerMinion, selections, rangeCircle, firetowerattack, firetowerattacks, icetowerattacks, graphics, iceTowerActive, iceTowers, upgradecircle, sell, sells, rangeCircles, towerstats, uibuttons, restartButton;
+var paths, minionOffset, tdSprites, home, homes, spawn, spawns, minions, towers, fieldElements, bullets, lifeText, waveText, spawnTimerWave, spawnTimerMinion, selections, rangeCircle, firetowerattack, firetowerattacks, icetowerattacks, graphics, iceTowerActive, iceTowers, upgradecircle, sell, sells, rangeCircles, towerstats, uibuttons, restartButton;
 var tower = [];
 var path = [];
 var bullet = [];
@@ -220,11 +220,17 @@ function create() {
 
     /** end sounds **/
 
+    // dummys minions
     dummy[0] = game.add.sprite(-128, -128, 'mapsprites', 4);
     dummy[1] = game.add.sprite(-128, -128, 'mapsprites', 113);
     dummy[2] = game.add.sprite(-128, -128, 'mapsprites', 142);
     dummy[3] = game.add.sprite(-128, -128, 'mapsprites', 156);
     dummy[4] = game.add.sprite(-128, -128, 'mapsprites', 185);
+    minionOffset = {
+        x: dummy[0].width / 2,
+        y: dummy[0].height / 2
+    };
+    // bullet dummy
     bulletDummy[0] = game.add.sprite(-128, -128, 'arrow');
 
 
@@ -240,9 +246,9 @@ function create() {
     homes = game.add.group();
     spawns = game.add.group();
     minions = game.add.group();
+    bullets = game.add.group();
     towers = game.add.group();
     iceTowers = game.add.group();
-    bullets = game.add.group();
     rangeCircles = game.add.group();
     selections = game.add.group();
     sells = game.add.group();
@@ -261,8 +267,9 @@ function create() {
 
     homes.enableBody = true;
     homes.inputEnabled = true;
-    home = homes.create(getCoordinate(11), getCoordinate(5), 'mapsprites', 118);
+    home = homes.create(getCoordinate(11) + minionOffset.x, getCoordinate(5) + minionOffset.y, 'mapsprites', 118);
     home.body.immovable = true;
+    home.anchor.setTo(0.5, 0.5);
     home.data.type = "home";
 
     //SET SPAWN
@@ -749,7 +756,9 @@ function update() {
 
             /** Arrow rotation **/
             bullets.forEachAlive(function (bullet) {
-                bullet.rotation = fixRotation(game.physics.arcade.angleBetween(bullet, minion[bullet.data.target]));
+                if (minion[bullet.data.target].alive) {
+                    bullet.rotation = fixRotation(game.physics.arcade.angleBetween(tower[bullet.data.towerId], minion[bullet.data.target]));
+                }
             });
 
 
@@ -1008,7 +1017,7 @@ function setTower(x, y, id) {
         var currentPath = findPath(testingPlacable, [0, 5], [11, 5]);
         var testMinionBlock = false;
         minions.forEachAlive(function (minion) {
-            var currentPath = findPath(testingPlacable, [getPosition(minion.position.x), getPosition(minion.position.y)], [11, 5]);
+            var currentPath = findPath(testingPlacable, [getPosition(minion.position.x + minionOffset.x), getPosition(minion.position.y + minionOffset.y)], [11, 5]);
 
             if (!currentPath[0]) {
                 testMinionBlock = true;
@@ -1021,7 +1030,7 @@ function setTower(x, y, id) {
 
             setFieldDistances();
             field[x][y] = 1;
-            tower[tower.length] = towers.create(getCoordinate(x), getCoordinate(y), 'towers', id);
+            tower[tower.length] = towers.create(getCoordinate(x) + minionOffset.x, getCoordinate(y) + minionOffset.y, 'towers', id);
             tower[tower.length - 1].data.type = 'tower';
             tower[tower.length - 1].data.lastShot = 0;
             tower[tower.length - 1].data.ID = tower.length - 1;
@@ -1071,6 +1080,7 @@ function setTower(x, y, id) {
             tower[tower.length - 1].body.offset.y -= offset;
             tower[tower.length - 1].body.center.x -= offset;
             tower[tower.length - 1].body.center.y -= offset;
+            tower[tower.length - 1].anchor.setTo(0.5, 0.5);
 
 
             money -= towerPrice[id];
@@ -1125,15 +1135,9 @@ function onClickField(e) {
 
 function showPathMinion(minion) {
     var pos = {
-        x: getPosition(minion.position.x),
-        y: getPosition(minion.position.y)
+        x: Math.floor(getPosition(minion.position.x-minionOffset.x)),
+        y: Math.floor(getPosition(minion.position.y-minionOffset.y))
     };
-    // console.log(pos);
-    var pos = {
-        x: Math.floor(getPosition(minion.position.x)),
-        y: Math.floor(getPosition(minion.position.y))
-    };
-    // console.log(pos);
     var path = [];
     path[0] = [];
     path[0][0] = pos.x;
@@ -1282,8 +1286,8 @@ function checkMinionsAlive() {
 
 function spawnMinion(id) {
     var takeThisMinion = recycleMinion();
-    var x = spawn.position.x+32;
-    var y = spawn.position.y+32;
+    var x = spawn.position.x + minionOffset.x;
+    var y = spawn.position.y + minionOffset.y;
     if (takeThisMinion === null) {
         takeThisMinion = minion.length;
 
@@ -1394,9 +1398,15 @@ function moveDatMinion(minion) {
             minion.data.slowed = false;
         }
         var pos = {
-            x: Math.floor(getPosition(minion.position.x)),
-            y: Math.floor(getPosition(minion.position.y))
+            x: Math.floor(getPosition(minion.position.x - 32)),
+            y: Math.floor(getPosition(minion.position.y - 32))
         };
+
+        var posCoord = {
+            x: minion.position.x - 32,
+            y: minion.position.y - 32
+        };
+
         if (!(pos.x === 11 && pos.y === 5) && minion.alive) {
             var way = {
                 u: 999,
@@ -1421,26 +1431,27 @@ function moveDatMinion(minion) {
                 var min = Math.min(way.u, way.d, way.r, way.l);
                 if (min === way.u) {
                     goto = {
-                        x: getCoordinate(pos.x),
-                        y: getCoordinate(pos.y - 1)
+                        x: (posCoord.x) + minionOffset.x,
+                        y: (posCoord.y - 64) + minionOffset.y
                     };
                 } else if (min === way.d) {
                     goto = {
-                        x: getCoordinate(pos.x),
-                        y: getCoordinate(pos.y + 1)
+                        x: (posCoord.x) + minionOffset.x,
+                        y: (posCoord.y + 64) + minionOffset.y
                     };
                 } else if (min === way.r) {
                     goto = {
-                        x: getCoordinate(pos.x + 1),
-                        y: getCoordinate(pos.y)
+                        x: (posCoord.x + 64) + minionOffset.x,
+                        y: (posCoord.y) + minionOffset.y
                     };
                 } else if (min === way.l) {
                     goto = {
-                        x: getCoordinate(pos.x - 1),
-                        y: getCoordinate(pos.y)
+                        x: (posCoord.x - 64) + minionOffset.x,
+                        y: (posCoord.y) + minionOffset.y
                     };
                 }
             }
+
 
             if (!minion.data.tween) {
                 minion.data.tween = game.add.tween(minion).to(goto, minion.data.minionSpeed, 'Linear', true, 0);
@@ -1455,7 +1466,7 @@ function moveDatMinion(minion) {
                 minion.data.moving = false;
                 moveDatMinion(minion);
             }, this);
-            minionOnField[getPosition(goto.x)][getPosition(goto.y)] = 1;
+            minionOnField[getPosition(goto.x - 32)][getPosition(goto.y - 32)] = 1;
             if (minion.data.lastPos) {
                 minionOnField[minion.data.lastPos.x][minion.data.lastPos.y] = 0;
             }
@@ -1495,13 +1506,14 @@ function shootBullet(tower, target) {
         var takeDatBullet = recycleBullet();
         if (takeDatBullet === null) {
             takeDatBullet = bullet.length;
-            bullet[takeDatBullet] = bullets.create(tower.position.x + 16, tower.position.y + 32, 'arrow');
+            bullet[takeDatBullet] = bullets.create(tower.position.x, tower.position.y, 'arrow');
             bullet[takeDatBullet].scale.setTo(0.5);
+            bullet[takeDatBullet].alpha=0.75;
         } else {
             bullet[takeDatBullet].texture = bulletDummy[0].texture;
             bullet[takeDatBullet].scale.setTo(0.5);
-            bullet[takeDatBullet].position.x = tower.position.x + 16;
-            bullet[takeDatBullet].position.y = tower.position.y + 32;
+            bullet[takeDatBullet].position.x = tower.position.x;
+            bullet[takeDatBullet].position.y = tower.position.y;
             bullet[takeDatBullet].revive();
         }
 
@@ -1510,6 +1522,7 @@ function shootBullet(tower, target) {
         bullet[takeDatBullet].data.target = target.data.id;
         bullet[takeDatBullet].data.targetHit = 0;
         bullet[takeDatBullet].data.damage = tower.data.damage;
+        bullet[takeDatBullet].data.towerId = tower.data.ID;
         bullet[takeDatBullet].data.id = takeDatBullet;
         if (sounds.active) {
             tower.data.bulletSound.play();
@@ -1532,7 +1545,7 @@ function shootBullet(tower, target) {
 
 
 function minionHitBase(minion, base) {
-    if (minion.alive && game.physics.arcade.distanceBetween(minion, base) <= 3) {
+    if (minion.alive && game.physics.arcade.distanceBetween(minion, base) <= 10) {
         minionOnField[minion.data.lastPos.x][minion.data.lastPos.y] = 0;
         minionOnField[getPosition(minion.position.x)][getPosition(minion.position.y)] = 0;
         life--;
