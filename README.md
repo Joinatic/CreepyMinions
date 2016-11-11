@@ -13,7 +13,6 @@ https://soundcloud.com/hadalmusic/two-to-one-szabo-pluck-sound
     - (atm you are able to set tower in pause)
 
 - Tower:
-    
     - slow tower
         - add sound
         - 2 upgrade paths:
