@@ -712,6 +712,8 @@ function create() {
 
 function update() {
     resizeGame();
+    updateText();
+    updateSound();
     if (!paused) {
         if (!lose) {
             // checkMinionsAlive();
@@ -773,8 +775,7 @@ function update() {
                 updateDelay = game.time.now + (100/speedUp);
             }
 
-            updateText();
-            updateSound();
+
 
             // add pause time to wave spawn
             spawnTimerWave += game.time.pauseDuration;
