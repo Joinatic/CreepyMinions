@@ -26,6 +26,20 @@ var minionOnField = [
     [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
     [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
 ];
+var field = [
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+];
 var timesRun = 0;
 var paths, tdSprites, home, homes, spawn, spawns, minions, towers, fieldElements, bullets, lifeText, waveText, spawnTimerWave, spawnTimerMinion, selections, rangeCircle, firetowerattack, firetowerattacks, icetowerattacks, graphics, iceTowerActive, iceTowers, upgradecircle, sell, sells, rangeCircles, towerstats, uibuttons, restartButton;
 var tower = [];
@@ -108,20 +122,7 @@ var runes = {
     }
 };
 var minionsAlive = false;
-var field = [
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
-];
+
 var spawnLock = false;
 var fieldObjects = [];
 
@@ -198,6 +199,7 @@ function preload() {
     game.load.spritesheet('minions', 'assets/spritesheet_minions.png', 128, 256);
     game.load.spritesheet('explo', 'assets/explo.png', 120, 120, 21);
     game.load.spritesheet('exploice', 'assets/exploice.png', 120, 120, 21);
+    game.load.spritesheet('arrow', 'assets/arrow.png', 64, 64);
     game.load.audio('t2', ['sounds/t2.mp3']);
     game.load.audio('t3', ['sounds/t3.mp3']);
     game.load.audio('t4', ['sounds/t4.mp3']);
@@ -223,7 +225,7 @@ function create() {
     dummy[2] = game.add.sprite(-128, -128, 'mapsprites', 142);
     dummy[3] = game.add.sprite(-128, -128, 'mapsprites', 156);
     dummy[4] = game.add.sprite(-128, -128, 'mapsprites', 185);
-    bulletDummy[0] = game.add.sprite(-128, -128, 'tdsprites', 275);
+    bulletDummy[0] = game.add.sprite(-128, -128, 'arrow');
 
 
     game.physics.startSystem(Phaser.Physics.ARCADE);
@@ -732,7 +734,7 @@ function update() {
                     sell.alpha = 0.3;
                 }
                 waveCleared();
-                updateDelay = game.time.now + 20;
+                updateDelay = game.time.now + 100;
             }
 
             updateText();
@@ -745,6 +747,11 @@ function update() {
                 spawnWave();
             }
 
+            /** Arrow rotation **/
+            bullets.forEachAlive(function (bullet) {
+                bullet.rotation = fixRotation(game.physics.arcade.angleBetween(bullet, minion[bullet.data.target]));
+            });
+
 
             youLoose();
 
@@ -752,57 +759,8 @@ function update() {
     }
 }
 
-function restartGame() {
-    minions.forEachAlive(function (minion) {
-        minion.kill();
-    }, this);
-    bullets.forEachAlive(function (bullet) {
-        bullet.kill();
-    }, this);
-    towers.forEachAlive(function (tower) {
-        tower.kill();
-    }, this);
-    life = 100;
-    money = 100;
-    runes.dark.value = 0;
-    runes.holy.value = 0;
-    runes.fire.value = 0;
-    runes.ice.value = 0;
-
-    wave = 1;
-    spawnDelay = 8000;
-    selectedTower = 0;
-    selectedLiveTower = -1;
-    field = [
-        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
-    ];
-    fieldDistances = [
-        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
-    ];
-    setFieldDistances();
-    lose = false;
+function fixRotation(rotation) {
+    return rotation + 1.57079633;
 }
 
 
@@ -1170,7 +1128,7 @@ function showPathMinion(minion) {
         x: getPosition(minion.position.x),
         y: getPosition(minion.position.y)
     };
-    console.log(pos);
+    // console.log(pos);
     var pos = {
         x: Math.floor(getPosition(minion.position.x)),
         y: Math.floor(getPosition(minion.position.y))
@@ -1324,8 +1282,8 @@ function checkMinionsAlive() {
 
 function spawnMinion(id) {
     var takeThisMinion = recycleMinion();
-    var x = spawn.position.x;
-    var y = spawn.position.y;
+    var x = spawn.position.x+32;
+    var y = spawn.position.y+32;
     if (takeThisMinion === null) {
         takeThisMinion = minion.length;
 
@@ -1384,7 +1342,6 @@ function spawnMinion(id) {
         minion[takeThisMinion].events.onInputDown.add(onClickField, this);
         game.physics.arcade.enable(minion[takeThisMinion]);
     } else {
-
         stopTweensFor(minion[takeThisMinion]);
         minion[takeThisMinion].texture = dummy[id].texture;
         minion[takeThisMinion].position.x = x;
@@ -1394,7 +1351,6 @@ function spawnMinion(id) {
         minion[takeThisMinion].data.revived = true;
     }
     minion[takeThisMinion].data.worth = minionBounty[id];
-    console.log(minionBounty[id]);
     minion[takeThisMinion].data.fixWorth = minionBounty[id];
     minion[takeThisMinion].data.fieldsSlowed = 0;
     minion[takeThisMinion].data.id = takeThisMinion;
@@ -1412,11 +1368,13 @@ function spawnMinion(id) {
     minion[takeThisMinion].data.tween = false;
     minion[takeThisMinion].data.stuntime = 0;
     minion[takeThisMinion].inputEnabled = true;
+    minion[takeThisMinion].anchor.setTo(0.5, 0.5);
+    console.log(minion[takeThisMinion]);
     moveDatMinion(minion[takeThisMinion]);
 }
 
-function stopTweensFor(obj) {  // first get all of the active tweens
-    console.log(obj);
+function stopTweensFor(obj) {
+    // console.log(obj);
     if (obj.data.tween) {
         obj.data.tween.stop();
     }
@@ -1425,6 +1383,10 @@ function stopTweensFor(obj) {  // first get all of the active tweens
 function moveDatMinion(minion) {
     if (!minion.data.moving) {
         minion.data.moving = true;
+        var diff = {
+            x: (minion.width / 2),
+            y: (minion.height / 2)
+        };
         if (minion.data.fieldsSlowed > 0) {
             minion.data.fieldsSlowed--;
         } else {
@@ -1479,6 +1441,7 @@ function moveDatMinion(minion) {
                     };
                 }
             }
+
             if (!minion.data.tween) {
                 minion.data.tween = game.add.tween(minion).to(goto, minion.data.minionSpeed, 'Linear', true, 0);
             } else {
@@ -1486,7 +1449,7 @@ function moveDatMinion(minion) {
                 minion.data.tween.chain(nextTween);
                 minion.data.tween = nextTween;
             }
-            minion.animations.play('walk');
+            // minion.animations.play('walk');
             minion.data.tween.onComplete.add(function () {
                 // minion.data.tween.stop();
                 minion.data.moving = false;
@@ -1497,6 +1460,8 @@ function moveDatMinion(minion) {
                 minionOnField[minion.data.lastPos.x][minion.data.lastPos.y] = 0;
             }
             minion.data.lastPos = pos;
+            console.log(pos);
+            console.log(goto);
         } else {
             stopTweensFor(minion);
         }
@@ -1530,13 +1495,17 @@ function shootBullet(tower, target) {
         var takeDatBullet = recycleBullet();
         if (takeDatBullet === null) {
             takeDatBullet = bullet.length;
-            bullet[takeDatBullet] = bullets.create(tower.position.x, tower.position.y, 'tdsprites', 275);
+            bullet[takeDatBullet] = bullets.create(tower.position.x + 16, tower.position.y + 32, 'arrow');
+            bullet[takeDatBullet].scale.setTo(0.5);
         } else {
             bullet[takeDatBullet].texture = bulletDummy[0].texture;
-            bullet[takeDatBullet].position.x = tower.position.x;
-            bullet[takeDatBullet].position.y = tower.position.y;
+            bullet[takeDatBullet].scale.setTo(0.5);
+            bullet[takeDatBullet].position.x = tower.position.x + 16;
+            bullet[takeDatBullet].position.y = tower.position.y + 32;
             bullet[takeDatBullet].revive();
         }
+
+
         game.physics.arcade.enable(bullet[takeDatBullet]);
         bullet[takeDatBullet].data.target = target.data.id;
         bullet[takeDatBullet].data.targetHit = 0;
@@ -1889,7 +1858,7 @@ function togglePause() {
         });
         bullets.forEachAlive(function (bullet) {
             bullet.data.velocity = bullet.body.velocity;
-            console.log(bullet.body.velocity);
+            // console.log(bullet.body.velocity);
             bullet.body.velocity.setTo(0, 0);
         });
         uibutton.pause.kill();
@@ -1907,4 +1876,71 @@ function toggleSound() {
         uibutton.soundOff.revive();
         sounds.active = true;
     }
+}
+
+function restartGame() {
+    minions.forEachAlive(function (minion) {
+        minion.kill();
+    }, this);
+    bullets.forEachAlive(function (bullet) {
+        bullet.kill();
+    }, this);
+    towers.forEachAlive(function (tower) {
+        tower.kill();
+    }, this);
+    life = 100;
+    money = 100;
+    runes.dark.value = 0;
+    runes.holy.value = 0;
+    runes.fire.value = 0;
+    runes.ice.value = 0;
+
+    wave = 1;
+    spawnDelay = 8000;
+    selectedTower = 0;
+    selectedLiveTower = -1;
+    field = [
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+    ];
+    fieldDistances = [
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+    ];
+    minionOnField = [
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+    ];
+    setFieldDistances();
+    lose = false;
 }
