@@ -41,7 +41,7 @@ var field = [
     [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
 ];
 var timesRun = 0;
-var paths, backgroundMusic, minionOffset, tdSprites, home, homes, spawn, spawns, minions, towers, fieldElements, bullets, lifeText, waveText, spawnTimerWave, spawnTimerMinion, selections, rangeCircle, firetowerattack, firetowerattacks, icetowerattacks, graphics, iceTowerActive, iceTowers, upgradecircle, sell, sells, rangeCircles, towerstats, uibuttons, restartButton, soundBar, soundBarBg;
+var paths, backgroundMusic, minionOffset, tdSprites, home, homes, spawn, spawns, minions, towers, fieldElements, bullets, lifeText, waveText, spawnTimerWave, spawnTimerMinion, selections, rangeCircle, firetowerattack, firetowerattacks, icetowerattacks, graphics, iceTowerActive, iceTowers, upgradecircle, sell, sells, rangeCircles, towerstats, uibuttons, restartButton, soundBar, soundBarBg, fastForwardButton;
 var tower = [];
 var path = [];
 var bullet = [];
@@ -57,6 +57,7 @@ var uibutton = {
 var updateDelay = 0;
 var startPause = 0;
 var endPause = 0;
+var speedUp = 1;
 var paused = false;
 var moneyText = [];
 var towerPrice = [10, 15, 20, 100, 150, 200, 500, 750, 1000, 2500];
@@ -295,6 +296,11 @@ function create() {
     /** END BUILD MAP **/
 
     /** BUILD POINTS & INFORMATIONS **/
+
+    fastForwardButton= uibuttons.create(945, 30, 'menu', 187);
+    fastForwardButton.inputEnabled = true;
+    fastForwardButton.events.onInputDown.add(fastForwardToggle, this);
+    fastForwardButton.scale.setTo(0.8, 0.8);
 
     soundBarBG = uibuttons.create(1028, 36, 'soundbar');
     soundBarBG.width *= 1.5;
@@ -718,7 +724,7 @@ function update() {
                 minions.forEachAlive(function (minion) {
                     minionsAlive = true;
 
-                    if ((minion.data.stuntime ) < game.time.now - 1000 && minion.data.stunned) {
+                    if ((minion.data.stuntime ) < game.time.now - (1000/speedUp) && minion.data.stunned) {
                         // minion.data.stunned = false;
                         minion.data.tween.resume();
                         minion.data.stunned = false;
@@ -736,7 +742,7 @@ function update() {
                 }
 
                 towers.forEachAlive(function (tower) {
-                    if (tower.data.lastShot < game.time.now - tower.data.atkspeed) {
+                    if (tower.data.lastShot < game.time.now - (tower.data.atkspeed/speedUp)) {
                         minions.forEachAlive(function (minion) {
                             if (game.physics.arcade.distanceBetween(tower, minion) <= towerRange[tower.data.towerid]) {
                                 shootCalc(tower, minion);
@@ -764,7 +770,7 @@ function update() {
                     sell.alpha = 0.3;
                 }
                 waveCleared();
-                updateDelay = game.time.now + 100;
+                updateDelay = game.time.now + (100/speedUp);
             }
 
             updateText();
@@ -774,7 +780,7 @@ function update() {
             spawnTimerWave += game.time.pauseDuration;
             game.time.pauseDuration = 0;
 
-            if (game.time.now > spawnTimerWave && !spawnLock) {
+            if (game.time.now > (spawnTimerWave/speedUp) && !spawnLock) {
                 spawnWave();
             }
 
@@ -883,7 +889,7 @@ function shootCalc(tower, minion) {
     if (minion.alive && tower.alive) {
         if (tower.data.towerid === 0 || tower.data.towerid === 3 || tower.data.towerid === 6) {
 
-            if (tower.data.lastShot < game.time.now - tower.data.atkspeed) {
+            if (tower.data.lastShot < game.time.now - (tower.data.atkspeed)/speedUp) {
 
                 shootBullet(tower, minion);
                 tower.data.lastShot = game.time.now;
@@ -904,7 +910,7 @@ function shootCalc(tower, minion) {
         }
         if (tower.data.towerid === 2 || tower.data.towerid === 5 || tower.data.towerid === 8 || tower.data.towerid === 9) {
             //fire nova
-            if (tower.data.explosionFire.data.lastShotFire < game.time.now - tower.data.atkspeed) {
+            if (tower.data.explosionFire.data.lastShotFire < game.time.now - (tower.data.atkspeed)/speedUp) {
                 minions.forEachAlive(function (target) {
                     if (game.physics.arcade.distanceBetween(target, tower) < (tower.data.range + 32)) {
 
@@ -921,10 +927,10 @@ function shootCalc(tower, minion) {
             }
         }
         if (tower.data.towerid === 4 || tower.data.towerid === 7) {
-            if (tower.data.explosionIce.data.lastShotIce < game.time.now - tower.data.atkspeed) {
+            if (tower.data.explosionIce.data.lastShotIce < game.time.now - (tower.data.atkspeed/speedUp)) {
                 minions.forEachAlive(function (target) {
 
-                    if (game.physics.arcade.distanceBetween(target, tower) < tower.data.range + 2 && (target.data.stuntime) < game.time.now - 2000) {
+                    if (game.physics.arcade.distanceBetween(target, tower) < tower.data.range + 2 && (target.data.stuntime) < game.time.now - (2000/speedUp)) {
                         target.data.stunned = true;
                         //stun
                         target.data.stuntime = game.time.now;
@@ -938,11 +944,11 @@ function shootCalc(tower, minion) {
 
         }
         if (tower.data.towerid === 9) {
-            if (tower.data.explosionIce.data.lastShotIce < game.time.now - tower.data.atkspeed[1]) {
+            if (tower.data.explosionIce.data.lastShotIce < game.time.now - (tower.data.atkspeed[1]/speedUp)) {
 
                 minions.forEachAlive(function (target) {
 
-                    if (game.physics.arcade.distanceBetween(target, tower) < tower.data.range + 2 && (target.data.stuntime) < game.time.now - 1500) {
+                    if (game.physics.arcade.distanceBetween(target, tower) < tower.data.range + 2 && (target.data.stuntime) < game.time.now - (1500/speedUp)) {
 
                         target.data.stunned = true;
                         //stun
@@ -952,7 +958,7 @@ function shootCalc(tower, minion) {
                     }
                 });
             }
-            if (tower.data.explosionFire.data.lastShotFire < game.time.now - tower.data.atkspeed[0]) {
+            if (tower.data.explosionFire.data.lastShotFire < game.time.now - (tower.data.atkspeed[0]/speedUp)) {
                 //firenova
                 minions.forEachAlive(function (target) {
                     if (game.physics.arcade.distanceBetween(target, tower) < (tower.data.range + 32)) {
@@ -983,7 +989,7 @@ function hitMinion(bullet, minion) {
                 minion.damage(bullet.data.damage);
             }
             bullet.data.targetHit = game.time.now;
-        } else if (game.time.now > bullet.data.targetHit + 150) {
+        } else if (game.time.now > bullet.data.targetHit + (150/speedUp)) {
             bullet.kill();
 //                bullet.destroy();
         }
@@ -1137,7 +1143,7 @@ function onClickField(e) {
 
         }
     } else if (e.data.type === 'spawn' && !minionsAlive) {
-        spawnTimerWave = game.time.now + 200;
+        spawnTimerWave = game.time.now + (200/speedUp);
         selectedTower = -1;
     } else if (e.data.type === 'tower') {
         toggleRange(e);
@@ -1483,9 +1489,9 @@ function moveDatMinion(minion) {
 
 
             if (!minion.data.tween) {
-                minion.data.tween = game.add.tween(minion).to(goto, minion.data.minionSpeed, 'Linear', true, 0);
+                minion.data.tween = game.add.tween(minion).to(goto, (minion.data.minionSpeed/speedUp), 'Linear', true, 0);
             } else {
-                var nextTween = game.add.tween(minion).to(goto, minion.data.minionSpeed, 'Linear', true, 0);
+                var nextTween = game.add.tween(minion).to(goto, (minion.data.minionSpeed/speedUp), 'Linear', true, 0);
                 minion.data.tween.chain(nextTween);
                 minion.data.tween = nextTween;
             }
@@ -1510,7 +1516,7 @@ function moveDatMinion(minion) {
 
 function moveBulletToTarget(bullet) {
     if (minion[bullet.data.target].alive) {
-        game.physics.arcade.moveToObject(bullet, minion[bullet.data.target], 500);
+        game.physics.arcade.moveToObject(bullet, minion[bullet.data.target], (500*speedUp));
     } else {
         bullet.kill();
     }
@@ -1576,7 +1582,7 @@ function shootBullet(tower, target) {
 function minionHitBase(minion, base) {
     if (minion.alive && game.physics.arcade.distanceBetween(minion, base) <= 10) {
         minionOnField[minion.data.lastPos.x][minion.data.lastPos.y] = 0;
-        minionOnField[getPosition(minion.position.x)][getPosition(minion.position.y)] = 0;
+        minionOnField[getPosition(minion.position.x-minionOffset.x)][getPosition(minion.position.y-minionOffset.y)] = 0;
         life--;
         stopTweensFor(minion);
         minion.kill();
@@ -1727,7 +1733,7 @@ function spawnWave() {
             }
 
             spawnMinion(minID);
-            spawnTimerMinion = game.time.now + spawnTime;
+            spawnTimerMinion = game.time.now + (spawnTime/speedUp);
         }
     }
 }
@@ -1738,7 +1744,7 @@ function waveCleared() {
         wave++;
         game.time.slowMotion = 2;
         spawnLock = false;
-        spawnTimerWave = game.time.now + spawnDelay;
+        spawnTimerWave = game.time.now + (spawnDelay/speedUp);
     }
 }
 
@@ -2021,5 +2027,19 @@ function moreNoisy(obj) {
     if(soundBar.width!=soundBarBG.width){
         soundBar.width += soundBarBG.width*0.1;
         volume += 10;
+    }
+}
+
+function fastForwardToggle() {
+    switch(speedUp) {
+        case 1:
+            speedUp=2;
+            break;
+        case 2:
+            speedUp=4;
+            break;
+        case 4:
+            speedUp=1;
+            break;
     }
 }

@@ -63,7 +63,6 @@ https://soundcloud.com/hadalmusic/two-to-one-szabo-pluck-sound
 
 
 - Interface:
-    - speed up
     - menu at start
     - lose screen
     - background music
