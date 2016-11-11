@@ -41,7 +41,7 @@ var field = [
     [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
 ];
 var timesRun = 0;
-var paths, minionOffset, tdSprites, home, homes, spawn, spawns, minions, towers, fieldElements, bullets, lifeText, waveText, spawnTimerWave, spawnTimerMinion, selections, rangeCircle, firetowerattack, firetowerattacks, icetowerattacks, graphics, iceTowerActive, iceTowers, upgradecircle, sell, sells, rangeCircles, towerstats, uibuttons, restartButton;
+var paths, backgroundMusic, minionOffset, tdSprites, home, homes, spawn, spawns, minions, towers, fieldElements, bullets, lifeText, waveText, spawnTimerWave, spawnTimerMinion, selections, rangeCircle, firetowerattack, firetowerattacks, icetowerattacks, graphics, iceTowerActive, iceTowers, upgradecircle, sell, sells, rangeCircles, towerstats, uibuttons, restartButton, soundBar, soundBarBg;
 var tower = [];
 var path = [];
 var bullet = [];
@@ -50,6 +50,7 @@ var fieldElement = [];
 var lose = false;
 var towerstat = [];
 var money = 100;
+var volume = 100;
 var uibutton = {
     soundOn: null
 };
@@ -200,11 +201,14 @@ function preload() {
     game.load.spritesheet('explo', 'assets/explo.png', 120, 120, 21);
     game.load.spritesheet('exploice', 'assets/exploice.png', 120, 120, 21);
     game.load.spritesheet('arrow', 'assets/arrow.png', 64, 64);
+    game.load.spritesheet('soundbar', 'assets/soundbar.png', 64, 64);
     game.load.audio('t2', ['sounds/t2.mp3']);
     game.load.audio('t3', ['sounds/t3.mp3']);
     game.load.audio('t4', ['sounds/t4.mp3']);
     game.load.audio('sell', ['sounds/sell.ogg']);
-    game.load.audio('bullet', ['sounds/bullet.wav']);
+    game.load.audio('bullet', ['sounds/shoot.ogg']);
+    game.load.audio('bullet1', ['sounds/shoot1.mp3']);
+    game.load.audio('bg', ['sounds/background.mp3']);
     temp.destroy();
 }
 var debugtext = [];
@@ -213,10 +217,16 @@ function create() {
 
     /** sounds **/
     sounds.upgrade.t2 = game.add.audio('t2');
+    sounds.upgrade.t2.volume=(volume/100)*2;
     sounds.upgrade.t3 = game.add.audio('t3');
+    sounds.upgrade.t3.volume=(volume/100)*2;
     sounds.upgrade.t4 = game.add.audio('t4');
+    sounds.upgrade.t4.volume=(volume/100)*2;
     sounds.sell = game.add.audio('sell');
-
+    sounds.sell.volume=(volume/100)*2;
+    backgroundMusic=game.add.audio('bg');
+    backgroundMusic.loop=true;
+    backgroundMusic.volume=0.5;
 
     /** end sounds **/
 
@@ -286,12 +296,25 @@ function create() {
 
     /** BUILD POINTS & INFORMATIONS **/
 
-    uibutton.soundOn = uibuttons.create(1088, 24, 'menu', 25);
+    soundBarBG = uibuttons.create(1028, 36, 'soundbar');
+    soundBarBG.width *= 1.5;
+    soundBarBG.height *= 0.4;
+    soundBarBG.alpha = 0.5;
+    soundBarBG.inputEnabled = true;
+    soundBarBG.events.onInputDown.add(moreNoisy, this);
+
+    soundBar = uibuttons.create(1028, 36, 'soundbar');
+    soundBar.width *= 1.5;
+    soundBar.height *= 0.4;
+    soundBar.inputEnabled = true;
+    soundBar.events.onInputDown.add(lessNoisy, this);
+
+    uibutton.soundOn = uibuttons.create(980, 24, 'menu', 25);
     uibutton.soundOn.inputEnabled = true;
     uibutton.soundOn.events.onInputDown.add(toggleSound, this);
     uibutton.soundOn.kill();
 
-    uibutton.soundOff = uibuttons.create(1088, 24, 'menu', 5);
+    uibutton.soundOff = uibuttons.create(980, 24, 'menu', 5);
     uibutton.soundOff.inputEnabled = true;
     uibutton.soundOff.events.onInputDown.add(toggleSound, this);
 
@@ -677,7 +700,7 @@ function create() {
     //         debugtext[i][j] = game.add.text(getCoordinate(i) + 32, getCoordinate(j) + 32, "0", style);
     //     }
     // }
-
+    backgroundMusic.play();
 }
 
 
@@ -745,6 +768,7 @@ function update() {
             }
 
             updateText();
+            updateSound();
 
             // add pause time to wave spawn
             spawnTimerWave += game.time.pauseDuration;
@@ -1039,7 +1063,12 @@ function setTower(x, y, id) {
             tower[tower.length - 1].data.damage = towerDamage[id];
             tower[tower.length - 1].data.pos = {x: x, y: y};
             tower[tower.length - 1].data.towerid = id;
-            tower[tower.length - 1].data.bulletSound = game.add.audio('bullet');
+            if((Math.random()*10)>=5){
+                tower[tower.length - 1].data.bulletSound = game.add.audio('bullet');
+            }else{
+                tower[tower.length - 1].data.bulletSound = game.add.audio('bullet1');
+            }
+            tower[tower.length - 1].data.bulletSound.volume= (volume/100)*0.8;
             tower[tower.length - 1].data.worth = towerPrice[id];
             tower[tower.length - 1].data.range = towerRange[id];
             tower[tower.length - 1].inputEnabled = true;
@@ -1556,6 +1585,18 @@ function minionHitBase(minion, base) {
     }
 }
 
+function updateSound() {
+    var vol= volume/100;
+    backgroundMusic.volume=vol;
+    towers.forEachAlive(function(tower) {
+       tower.data.bulletSound.volume=vol*0.8;
+    });
+    sounds.upgrade.t2.volume=vol*2;
+    sounds.upgrade.t3.volume=vol*2;
+    sounds.upgrade.t4.volume=vol*2;
+    sounds.sell.volume=vol*2;
+}
+
 function updateText() {
     var temp = money;
     if (selectedTower >= 0) {
@@ -1809,7 +1850,8 @@ function drawPath(actualPath) {
 }
 
 function testSprite(id) {
-    game.add.sprite(0, 0, 'minions', id);
+    var tmp = game.add.sprite(0, 0, 'menu', id);
+    tmp.width*=3;
 }
 
 function GimmeDatRess(value) {
@@ -1882,9 +1924,11 @@ function togglePause() {
 function toggleSound() {
     if (sounds.active) {
         sounds.active = false;
+        backgroundMusic.stop();
         uibutton.soundOff.kill();
         uibutton.soundOn.revive();
     } else {
+        backgroundMusic.play();
         uibutton.soundOn.kill();
         uibutton.soundOff.revive();
         sounds.active = true;
@@ -1956,4 +2000,26 @@ function restartGame() {
     ];
     setFieldDistances();
     lose = false;
+}
+
+function lessNoisy(obj) {
+    if(soundBar.width>soundBarBG.width*0.15){
+        soundBar.width -= soundBarBG.width*0.1;
+        volume -= 10;
+    } else {
+        soundBar.width = 0;
+        toggleSound();
+        volume = 0;
+    }
+
+}
+function moreNoisy(obj) {
+    if(soundBar.width===0) {
+            toggleSound();
+            volume += 10;
+    }
+    if(soundBar.width!=soundBarBG.width){
+        soundBar.width += soundBarBG.width*0.1;
+        volume += 10;
+    }
 }
