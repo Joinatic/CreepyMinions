@@ -5,15 +5,17 @@ Place your Towers and block the way of the CreepyMinions! Let them walk to your 
 
 
 All assets by http://kenney.nl/
-
+Background music by Hadal Music
+https://soundcloud.com/hadalmusic/two-to-one-szabo-pluck-sound
 
 # to-do's
+- lock ALL actions in pause
+    - (atm you are able to set tower in pause)
 
 - Tower:
-    - bullet to arrow
-    - change sound! (+less noisy)
     
     - slow tower
+        - add sound
         - 2 upgrade paths:
             - better slow
             - stun - but no slow
@@ -25,8 +27,10 @@ All assets by http://kenney.nl/
         - 2 paths
             - attackspeed
             - damage
+        - add sound
 
     - support Tower (green?)
+        - sound
         - unhide invisible enemys
         - increases atkspeed(t1), dmg(t2), money(t3)?, 3x runes(t4)?
             - costs:
@@ -35,11 +39,13 @@ All assets by http://kenney.nl/
                 - t3: 5HR 5DR 5FR 5IR
                 - t4: 10HR 10DR 10FR 10IR
     - "sniper"
+        - sound
         - massive range
         - 2 paths
             - damage
             - atkspeed
     - poison
+        - sound
         - dot
         - 2 paths
             - more dmg
@@ -47,6 +53,7 @@ All assets by http://kenney.nl/
     
 
 - Minions:
+    - death sound?
     - walk animation
     - Enemy types:
         - boss
@@ -61,6 +68,7 @@ All assets by http://kenney.nl/
     - menu at start
     - lose screen
     - background music
+    - pausemenu
 
 - Buffs
     - f.e. all towers +1 dmg
