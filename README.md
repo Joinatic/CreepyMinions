@@ -69,7 +69,7 @@ https://soundcloud.com/hadalmusic/two-to-one-szabo-pluck-sound
     - pausemenu
 
 - Buffs
-    - f.e. all towers +1 dmg
+    - f.e. all towers +1 dmg (purchasable)
     
     
 # bugs

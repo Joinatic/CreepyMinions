@@ -54,6 +54,7 @@ var volume = 100;
 var uibutton = {
     soundOn: null
 };
+var lastwave=0;
 var updateDelay = 0;
 var startPause = 0;
 var endPause = 0;
@@ -218,16 +219,16 @@ function create() {
 
     /** sounds **/
     sounds.upgrade.t2 = game.add.audio('t2');
-    sounds.upgrade.t2.volume=(volume/100)*2;
+    sounds.upgrade.t2.volume = (volume / 100) * 2;
     sounds.upgrade.t3 = game.add.audio('t3');
-    sounds.upgrade.t3.volume=(volume/100)*2;
+    sounds.upgrade.t3.volume = (volume / 100) * 2;
     sounds.upgrade.t4 = game.add.audio('t4');
-    sounds.upgrade.t4.volume=(volume/100)*2;
+    sounds.upgrade.t4.volume = (volume / 100) * 2;
     sounds.sell = game.add.audio('sell');
-    sounds.sell.volume=(volume/100)*2;
-    backgroundMusic=game.add.audio('bg');
-    backgroundMusic.loop=true;
-    backgroundMusic.volume=0.5;
+    sounds.sell.volume = (volume / 100) * 2;
+    backgroundMusic = game.add.audio('bg');
+    backgroundMusic.loop = true;
+    backgroundMusic.volume = 0.5;
 
     /** end sounds **/
 
@@ -297,43 +298,44 @@ function create() {
 
     /** BUILD POINTS & INFORMATIONS **/
 
-    fastForwardButton= uibuttons.create(945, 30, 'menu', 187);
+    //1168
+    fastForwardButton = uibuttons.create(1168, 30, 'menu', 187);
     fastForwardButton.inputEnabled = true;
     fastForwardButton.events.onInputDown.add(fastForwardToggle, this);
     fastForwardButton.scale.setTo(0.8, 0.8);
 
-    soundBarBG = uibuttons.create(1028, 36, 'soundbar');
+    soundBarBG = uibuttons.create(993, 42, 'soundbar');
     soundBarBG.width *= 1.5;
-    soundBarBG.height *= 0.4;
+    soundBarBG.height *= 0.25;
     soundBarBG.alpha = 0.5;
     soundBarBG.inputEnabled = true;
     soundBarBG.events.onInputDown.add(moreNoisy, this);
 
-    soundBar = uibuttons.create(1028, 36, 'soundbar');
+    soundBar = uibuttons.create(993, 42, 'soundbar');
     soundBar.width *= 1.5;
-    soundBar.height *= 0.4;
+    soundBar.height *= 0.25;
     soundBar.inputEnabled = true;
     soundBar.events.onInputDown.add(lessNoisy, this);
 
-    uibutton.soundOn = uibuttons.create(980, 24, 'menu', 25);
+    uibutton.soundOn = uibuttons.create(945, 24, 'menu', 25);
     uibutton.soundOn.inputEnabled = true;
     uibutton.soundOn.events.onInputDown.add(toggleSound, this);
     uibutton.soundOn.kill();
 
-    uibutton.soundOff = uibuttons.create(980, 24, 'menu', 5);
+    uibutton.soundOff = uibuttons.create(945, 24, 'menu', 5);
     uibutton.soundOff.inputEnabled = true;
     uibutton.soundOff.events.onInputDown.add(toggleSound, this);
 
-    uibutton.restart = uibuttons.create(1128, 24, 'menu', 24);
+    uibutton.restart = uibuttons.create(1093, 24, 'menu', 24);
     uibutton.restart.inputEnabled = true;
     uibutton.restart.events.onInputDown.add(restartGame, this);
 
-    uibutton.pause = uibuttons.create(1168, 32, 'menu', 144);
+    uibutton.pause = uibuttons.create(1133, 32, 'menu', 144);
     uibutton.pause.inputEnabled = true;
     uibutton.pause.events.onInputDown.add(togglePause, this);
     uibutton.pause.scale.setTo(0.8, 0.8);
 
-    uibutton.play = uibuttons.create(1168, 32, 'menu', 147);
+    uibutton.play = uibuttons.create(1133, 32, 'menu', 147);
     uibutton.play.inputEnabled = true;
     uibutton.play.events.onInputDown.add(togglePause, this);
     uibutton.play.kill();
@@ -726,12 +728,12 @@ function update() {
                 minions.forEachAlive(function (minion) {
                     minionsAlive = true;
 
-                    if ((minion.data.stuntime ) < game.time.now - (1000/speedUp) && minion.data.stunned) {
+                    if ((minion.data.stuntime ) < game.time.now - (1000 / speedUp) && minion.data.stunned) {
                         // minion.data.stunned = false;
                         minion.data.tween.resume();
                         minion.data.stunned = false;
                     }
-                    moveDatMinion(minion);
+                    // moveDatMinion(minion);
 
                 });
 
@@ -744,7 +746,7 @@ function update() {
                 }
 
                 towers.forEachAlive(function (tower) {
-                    if (tower.data.lastShot < game.time.now - (tower.data.atkspeed/speedUp)) {
+                    if (tower.data.lastShot < game.time.now - (tower.data.atkspeed / speedUp)) {
                         minions.forEachAlive(function (minion) {
                             if (game.physics.arcade.distanceBetween(tower, minion) <= towerRange[tower.data.towerid]) {
                                 shootCalc(tower, minion);
@@ -772,16 +774,15 @@ function update() {
                     sell.alpha = 0.3;
                 }
                 waveCleared();
-                updateDelay = game.time.now + (100/speedUp);
+                updateDelay = game.time.now + (100 / speedUp);
             }
-
 
 
             // add pause time to wave spawn
             spawnTimerWave += game.time.pauseDuration;
             game.time.pauseDuration = 0;
 
-            if (game.time.now > (spawnTimerWave/speedUp) && !spawnLock) {
+            if (game.time.now > (spawnTimerWave / speedUp) && !spawnLock) {
                 spawnWave();
             }
 
@@ -890,7 +891,7 @@ function shootCalc(tower, minion) {
     if (minion.alive && tower.alive) {
         if (tower.data.towerid === 0 || tower.data.towerid === 3 || tower.data.towerid === 6) {
 
-            if (tower.data.lastShot < game.time.now - (tower.data.atkspeed)/speedUp) {
+            if (tower.data.lastShot < game.time.now - (tower.data.atkspeed) / speedUp) {
 
                 shootBullet(tower, minion);
                 tower.data.lastShot = game.time.now;
@@ -911,7 +912,7 @@ function shootCalc(tower, minion) {
         }
         if (tower.data.towerid === 2 || tower.data.towerid === 5 || tower.data.towerid === 8 || tower.data.towerid === 9) {
             //fire nova
-            if (tower.data.explosionFire.data.lastShotFire < game.time.now - (tower.data.atkspeed)/speedUp) {
+            if (tower.data.explosionFire.data.lastShotFire < game.time.now - (tower.data.atkspeed) / speedUp) {
                 minions.forEachAlive(function (target) {
                     if (game.physics.arcade.distanceBetween(target, tower) < (tower.data.range + 32)) {
 
@@ -928,10 +929,10 @@ function shootCalc(tower, minion) {
             }
         }
         if (tower.data.towerid === 4 || tower.data.towerid === 7) {
-            if (tower.data.explosionIce.data.lastShotIce < game.time.now - (tower.data.atkspeed/speedUp)) {
+            if (tower.data.explosionIce.data.lastShotIce < game.time.now - (tower.data.atkspeed / speedUp)) {
                 minions.forEachAlive(function (target) {
 
-                    if (game.physics.arcade.distanceBetween(target, tower) < tower.data.range + 2 && (target.data.stuntime) < game.time.now - (2000/speedUp)) {
+                    if (game.physics.arcade.distanceBetween(target, tower) < tower.data.range + 2 && (target.data.stuntime) < game.time.now - (2000 / speedUp)) {
                         target.data.stunned = true;
                         //stun
                         target.data.stuntime = game.time.now;
@@ -945,11 +946,11 @@ function shootCalc(tower, minion) {
 
         }
         if (tower.data.towerid === 9) {
-            if (tower.data.explosionIce.data.lastShotIce < game.time.now - (tower.data.atkspeed[1]/speedUp)) {
+            if (tower.data.explosionIce.data.lastShotIce < game.time.now - (tower.data.atkspeed[1] / speedUp)) {
 
                 minions.forEachAlive(function (target) {
 
-                    if (game.physics.arcade.distanceBetween(target, tower) < tower.data.range + 2 && (target.data.stuntime) < game.time.now - (1500/speedUp)) {
+                    if (game.physics.arcade.distanceBetween(target, tower) < tower.data.range + 2 && (target.data.stuntime) < game.time.now - (1500 / speedUp)) {
 
                         target.data.stunned = true;
                         //stun
@@ -959,7 +960,7 @@ function shootCalc(tower, minion) {
                     }
                 });
             }
-            if (tower.data.explosionFire.data.lastShotFire < game.time.now - (tower.data.atkspeed[0]/speedUp)) {
+            if (tower.data.explosionFire.data.lastShotFire < game.time.now - (tower.data.atkspeed[0] / speedUp)) {
                 //firenova
                 minions.forEachAlive(function (target) {
                     if (game.physics.arcade.distanceBetween(target, tower) < (tower.data.range + 32)) {
@@ -990,7 +991,7 @@ function hitMinion(bullet, minion) {
                 minion.damage(bullet.data.damage);
             }
             bullet.data.targetHit = game.time.now;
-        } else if (game.time.now > bullet.data.targetHit + (150/speedUp)) {
+        } else if (game.time.now > bullet.data.targetHit + (150 / speedUp)) {
             bullet.kill();
 //                bullet.destroy();
         }
@@ -1070,12 +1071,12 @@ function setTower(x, y, id) {
             tower[tower.length - 1].data.damage = towerDamage[id];
             tower[tower.length - 1].data.pos = {x: x, y: y};
             tower[tower.length - 1].data.towerid = id;
-            if((Math.random()*10)>=5){
+            if ((Math.random() * 10) >= 5) {
                 tower[tower.length - 1].data.bulletSound = game.add.audio('bullet');
-            }else{
+            } else {
                 tower[tower.length - 1].data.bulletSound = game.add.audio('bullet1');
             }
-            tower[tower.length - 1].data.bulletSound.volume= (volume/100)*0.8;
+            tower[tower.length - 1].data.bulletSound.volume = (volume / 100) * 0.8;
             tower[tower.length - 1].data.worth = towerPrice[id];
             tower[tower.length - 1].data.range = towerRange[id];
             tower[tower.length - 1].inputEnabled = true;
@@ -1144,7 +1145,7 @@ function onClickField(e) {
 
         }
     } else if (e.data.type === 'spawn' && !minionsAlive) {
-        spawnTimerWave = game.time.now + (200/speedUp);
+        spawnTimerWave = game.time.now + (200 / speedUp);
         selectedTower = -1;
     } else if (e.data.type === 'tower') {
         toggleRange(e);
@@ -1171,8 +1172,8 @@ function onClickField(e) {
 
 function showPathMinion(minion) {
     var pos = {
-        x: Math.floor(getPosition(minion.position.x-minionOffset.x)),
-        y: Math.floor(getPosition(minion.position.y-minionOffset.y))
+        x: Math.floor(getPosition(minion.position.x - minionOffset.x)),
+        y: Math.floor(getPosition(minion.position.y - minionOffset.y))
     };
     var path = [];
     path[0] = [];
@@ -1311,13 +1312,6 @@ function recycleMinion() {
     } else {
         return null;
     }
-}
-
-function checkMinionsAlive() {
-    minionsAlive = false;
-    minions.forEachAlive(function () {
-        minionsAlive = true;
-    });
 }
 
 function spawnMinion(id) {
@@ -1490,9 +1484,9 @@ function moveDatMinion(minion) {
 
 
             if (!minion.data.tween) {
-                minion.data.tween = game.add.tween(minion).to(goto, (minion.data.minionSpeed/speedUp), 'Linear', true, 0);
+                minion.data.tween = game.add.tween(minion).to(goto, (minion.data.minionSpeed / speedUp), 'Linear', true, 0);
             } else {
-                var nextTween = game.add.tween(minion).to(goto, (minion.data.minionSpeed/speedUp), 'Linear', true, 0);
+                var nextTween = game.add.tween(minion).to(goto, (minion.data.minionSpeed / speedUp), 'Linear', true, 0);
                 minion.data.tween.chain(nextTween);
                 minion.data.tween = nextTween;
             }
@@ -1507,8 +1501,6 @@ function moveDatMinion(minion) {
                 minionOnField[minion.data.lastPos.x][minion.data.lastPos.y] = 0;
             }
             minion.data.lastPos = pos;
-            console.log(pos);
-            console.log(goto);
         } else {
             stopTweensFor(minion);
         }
@@ -1517,7 +1509,7 @@ function moveDatMinion(minion) {
 
 function moveBulletToTarget(bullet) {
     if (minion[bullet.data.target].alive) {
-        game.physics.arcade.moveToObject(bullet, minion[bullet.data.target], (500*speedUp));
+        game.physics.arcade.moveToObject(bullet, minion[bullet.data.target], (500 * speedUp));
     } else {
         bullet.kill();
     }
@@ -1544,7 +1536,7 @@ function shootBullet(tower, target) {
             takeDatBullet = bullet.length;
             bullet[takeDatBullet] = bullets.create(tower.position.x, tower.position.y, 'arrow');
             bullet[takeDatBullet].scale.setTo(0.5);
-            bullet[takeDatBullet].alpha=0.75;
+            bullet[takeDatBullet].alpha = 0.75;
         } else {
             bullet[takeDatBullet].texture = bulletDummy[0].texture;
             bullet[takeDatBullet].scale.setTo(0.5);
@@ -1583,7 +1575,7 @@ function shootBullet(tower, target) {
 function minionHitBase(minion, base) {
     if (minion.alive && game.physics.arcade.distanceBetween(minion, base) <= 10) {
         minionOnField[minion.data.lastPos.x][minion.data.lastPos.y] = 0;
-        minionOnField[getPosition(minion.position.x-minionOffset.x)][getPosition(minion.position.y-minionOffset.y)] = 0;
+        minionOnField[getPosition(minion.position.x - minionOffset.x)][getPosition(minion.position.y - minionOffset.y)] = 0;
         life--;
         stopTweensFor(minion);
         minion.kill();
@@ -1593,15 +1585,15 @@ function minionHitBase(minion, base) {
 }
 
 function updateSound() {
-    var vol= volume/100;
-    backgroundMusic.volume=vol;
-    towers.forEachAlive(function(tower) {
-       tower.data.bulletSound.volume=vol*0.8;
+    var vol = volume / 100;
+    backgroundMusic.volume = vol;
+    towers.forEachAlive(function (tower) {
+        tower.data.bulletSound.volume = vol * 0.8;
     });
-    sounds.upgrade.t2.volume=vol*2;
-    sounds.upgrade.t3.volume=vol*2;
-    sounds.upgrade.t4.volume=vol*2;
-    sounds.sell.volume=vol*2;
+    sounds.upgrade.t2.volume = vol * 2;
+    sounds.upgrade.t3.volume = vol * 2;
+    sounds.upgrade.t4.volume = vol * 2;
+    sounds.sell.volume = vol * 2;
 }
 
 function updateText() {
@@ -1734,18 +1726,19 @@ function spawnWave() {
             }
 
             spawnMinion(minID);
-            spawnTimerMinion = game.time.now + (spawnTime/speedUp);
+            spawnTimerMinion = game.time.now + (spawnTime / speedUp);
         }
     }
 }
 
 function waveCleared() {
-    if (!minionsAlive && spawnLock) {
+    if (!minionsAlive && spawnLock && lastwave===wave-1) {
         money += (wave * 10);
+        lastwave=wave;
         wave++;
         game.time.slowMotion = 2;
         spawnLock = false;
-        spawnTimerWave = game.time.now + (spawnDelay/speedUp);
+        spawnTimerWave = game.time.now + (spawnDelay / speedUp);
     }
 }
 
@@ -1858,7 +1851,7 @@ function drawPath(actualPath) {
 
 function testSprite(id) {
     var tmp = game.add.sprite(0, 0, 'menu', id);
-    tmp.width*=3;
+    tmp.width *= 3;
 }
 
 function GimmeDatRess(value) {
@@ -1928,7 +1921,7 @@ function togglePause() {
     }
 }
 
-function toggleSound() {
+function toggleSound(e) {
     if (sounds.active) {
         sounds.active = false;
         backgroundMusic.stop();
@@ -1959,7 +1952,7 @@ function restartGame() {
     runes.fire.value = 0;
     runes.ice.value = 0;
 
-    wave = 1;
+
     spawnDelay = 8000;
     selectedTower = 0;
     selectedLiveTower = -1;
@@ -2007,12 +2000,13 @@ function restartGame() {
     ];
     setFieldDistances();
     lose = false;
+    wave = 1;
 }
 
 function lessNoisy(obj) {
-    if(soundBar.width>soundBarBG.width*0.15){
-        soundBar.width -= soundBarBG.width*0.1;
-        volume -= 10;
+    if (soundBar.width > soundBarBG.width * 0.15) {
+        soundBar.width = soundBarBG.width * ((game.input.x - 993) / 100);
+        volume = game.input.x - 993;
     } else {
         soundBar.width = 0;
         toggleSound();
@@ -2021,26 +2015,27 @@ function lessNoisy(obj) {
 
 }
 function moreNoisy(obj) {
-    if(soundBar.width===0) {
-            toggleSound();
-            volume += 10;
-    }
-    if(soundBar.width!=soundBarBG.width){
-        soundBar.width += soundBarBG.width*0.1;
+    console.log(soundBarBG.width);
+    if (soundBar.width === 0) {
+        toggleSound();
         volume += 10;
+    }
+    if (soundBar.width != soundBarBG.width) {
+        soundBar.width = (game.input.x - 993);
+        volume = game.input.x - 993;
     }
 }
 
 function fastForwardToggle() {
-    switch(speedUp) {
+    switch (speedUp) {
         case 1:
-            speedUp=2;
+            speedUp = 2;
             break;
         case 2:
-            speedUp=4;
+            speedUp = 4;
             break;
         case 4:
-            speedUp=1;
+            speedUp = 1;
             break;
     }
 }
