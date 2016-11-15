@@ -206,6 +206,7 @@ function preload() {
     game.load.spritesheet('exploice', 'assets/exploice.png', 120, 120, 21);
     game.load.spritesheet('arrow', 'assets/arrow.png', 64, 64);
     game.load.spritesheet('soundbar', 'assets/soundbar.png', 64, 64);
+    game.load.spritesheet('fireball', 'assets/fireball.png', 64, 64);
     game.load.audio('t2', ['sounds/t2.mp3']);
     game.load.audio('t3', ['sounds/t3.mp3']);
     game.load.audio('t4', ['sounds/t4.mp3']);
@@ -245,7 +246,8 @@ function create() {
         y: dummy[0].height / 2
     };
     // bullet dummy
-    bulletDummy[0] = game.add.sprite(-128, -128, 'arrow');
+    bulletDummy['arrow'] = game.add.sprite(-128, -128, 'arrow');
+    // bulletDummy['fireball'] = game.add.sprite(-128, -128, 'fireball');
 
 
     game.physics.startSystem(Phaser.Physics.ARCADE);
@@ -892,9 +894,7 @@ function killMinion(minion, dmg) {
 function shootCalc(tower, minion) {
     if (minion.alive && tower.alive) {
         if (tower.data.towerid === 0 || tower.data.towerid === 3 || tower.data.towerid === 6) {
-
             if (tower.data.lastShot < game.time.now - (tower.data.atkspeed - bonusSpeed) / speedUp) {
-
                 shootBullet(tower, minion);
                 tower.data.lastShot = game.time.now;
             }
@@ -906,17 +906,13 @@ function shootCalc(tower, minion) {
                 minion.data.minionSpeed = minion.data.minionFixSpeed * 3;
                 minion.data.fieldsSlowed = 2;
                 shootBullet(tower, minion);
-
             }
-
-
         }
         if (tower.data.towerid === 2 || tower.data.towerid === 5 || tower.data.towerid === 8 || tower.data.towerid === 9) {
-            //fire nova
             if (tower.data.explosionFire.data.lastShotFire < game.time.now - (tower.data.atkspeed - bonusSpeed) / speedUp) {
                 minions.forEachAlive(function (target) {
+                    // shootBullet(tower, minion, 'fireball');
                     if (game.physics.arcade.distanceBetween(target, tower) < (tower.data.range + 32)) {
-
                         if (target.health - (tower.data.explosionFire.data.damage+bonusDamage) <= 0) {
                             killMinion(target, tower.data.explosionFire.data.damage+bonusDamage);
                         } else {
@@ -1086,7 +1082,7 @@ function setTower(x, y, id) {
 
             if (id === 1 || id === 4 || id === 2 || id === 9) {
                 tower[tower.length - 1].data.explosionFire = firetowerattacks.create(getCoordinate(x) - 28, getCoordinate(y) - 28, 'explo');
-                tower[tower.length - 1].data.explosionFire.animations.add('shoot', [0, 1, 2, 3, 4, 5, 6, 7, 8, 7, 6, 5, 4, 3, 2, 1, 0], atackspeed[id] / 17, false);
+                tower[tower.length - 1].data.explosionFire.animations.add('shoot', [0, 1, 2, 3, 4, 5, 6, 7, 8, 7, 6, 5, 4, 3, 2, 1, 0], (atackspeed[id]-bonusSpeed) / 17, false);
 
 //                    game.debug.body(tower[tower.length - 1].data.explosion);
                 tower[tower.length - 1].data.explosionFire.data.atkspeed = atackspeed[id];
@@ -1098,7 +1094,7 @@ function setTower(x, y, id) {
 //                    tower[tower.length - 1].data.explosion=firetowerattack;
 
                 tower[tower.length - 1].data.explosionIce = icetowerattacks.create(getCoordinate(x) - 28, getCoordinate(y) - 28, 'exploice');
-                tower[tower.length - 1].data.explosionIce.animations.add('shoot', [0, 1, 2, 3, 4, 5, 6, 7, 8, 7, 6, 5, 4, 3, 2, 1, 0], atackspeed[id] / 17, false);
+                tower[tower.length - 1].data.explosionIce.animations.add('shoot', [0, 1, 2, 3, 4, 5, 6, 7, 8, 7, 6, 5, 4, 3, 2, 1, 0], (atackspeed[id]-bonusSpeed) / 17, false);
 
 //                    game.debug.body(tower[tower.length - 1].data.explosion);
                 tower[tower.length - 1].data.explosionIce.data.atkspeed = atackspeed[id];
@@ -1527,7 +1523,7 @@ function recycleBullet() {
 }
 
 function shootBullet(tower, target) {
-    if (tower.data.towerid === 0 || tower.data.towerid === 3 || tower.data.towerid === 6) {
+    if (tower.data.towerid === 0 || tower.data.towerid === 3 || tower.data.towerid === 6 || tower.data.towerid === 2) {
         var takeDatBullet = recycleBullet();
         if (takeDatBullet === null) {
             takeDatBullet = bullet.length;
@@ -1535,7 +1531,7 @@ function shootBullet(tower, target) {
             bullet[takeDatBullet].scale.setTo(0.3);
             bullet[takeDatBullet].alpha = 0.75;
         } else {
-            bullet[takeDatBullet].texture = bulletDummy[0].texture;
+            bullet[takeDatBullet].texture = bulletDummy['arrow'].texture;
             // bullet[takeDatBullet].scale.setTo(0.5);
             bullet[takeDatBullet].position.x = tower.position.x;
             bullet[takeDatBullet].position.y = tower.position.y;
@@ -1559,7 +1555,9 @@ function shootBullet(tower, target) {
             explo.kill();
         }, this);
     } else if (tower.data.towerid === 2 || tower.data.towerid === 5 || tower.data.towerid === 8) {
+        /** fireball **/
 
+        /** fireball **/
         tower.data.explosionFire.revive();
         tower.data.explosionFire.animations.play('shoot');
         tower.data.explosionFire.animations.currentAnim.onComplete.add(function (explo) {
@@ -1595,9 +1593,11 @@ function updateSound() {
 
 function updateDPS() {
     for(var id = 0; id<selection.length; id++) {
-        selection[id].data.dps = (1000 / (atackspeed[id]-bonusSpeed)) * (towerDamage[id]+bonusDamage);
+        var tmpAtkSpeed=(atackspeed[id]-bonusSpeed);
+        if(tmpAtkSpeed<=0) tmpAtkSpeed=1;
+        selection[id].data.dps = (1000 / tmpAtkSpeed) * (towerDamage[id]+bonusDamage);
         if(id===10) {
-            selection[id].data.dps = (1000 / (atackspeed[id][0]-bonusSpeed)) * (towerDamage[id][0]+bonusDamage);
+            selection[id].data.dps = (1000 / tmpAtkSpeed) * (towerDamage[id][0]+bonusDamage);
         } else if( id===1 || id=== 4 || id === 7){
             selection[id].data.dps = 0;
         }
