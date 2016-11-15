@@ -9,11 +9,7 @@ Background music by Hadal Music
 https://soundcloud.com/hadalmusic/two-to-one-szabo-pluck-sound
 
 # to-do's
-- lock ALL actions in pause
-    - (atm you are able to set tower in pause)
-
 - Tower:
-    - fix minion upgrade!
     - slow tower
         - add sound
         - 2 upgrade paths:
@@ -70,7 +66,9 @@ https://soundcloud.com/hadalmusic/two-to-one-szabo-pluck-sound
     - pausemenu
 
 - Buffs
-    - f.e. all towers +1 dmg (purchasable)
+    - +damage Button
+    - +speed Button
+    - 
     
     
 # bugs
